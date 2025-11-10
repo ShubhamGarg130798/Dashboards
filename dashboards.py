@@ -32,20 +32,21 @@ st.markdown("""
     /* Header Styling */
     .header-section {
         margin-bottom: 3rem;
-        padding-bottom: 1rem;
+        padding-bottom: 1.5rem;
     }
     
     .main-title {
-        font-size: 2.8rem;
-        font-weight: 800;
+        font-size: 4.5rem;
+        font-weight: 900;
         color: #1e3a8a;
-        margin-bottom: 0.75rem;
-        letter-spacing: -0.5px;
+        margin-bottom: 1rem;
+        letter-spacing: -1px;
+        line-height: 1.1;
     }
     
     .title-underline {
-        width: 120px;
-        height: 5px;
+        width: 240px;
+        height: 6px;
         background: linear-gradient(to right, #3b82f6, #8b5cf6);
         border-radius: 3px;
         margin-bottom: 0;
@@ -182,7 +183,10 @@ st.markdown("""
             font-size: 1.5rem;
         }
         .main-title {
-            font-size: 2rem;
+            font-size: 2.5rem;
+        }
+        .title-underline {
+            width: 150px;
         }
     }
     </style>
@@ -199,59 +203,59 @@ st.markdown("""
 # Define brand dashboards with colors
 brand_dashboards = [
     {
-        "name": "Duniya Finance",
+        "name": "Duniya",
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
-        "description": "Harsh Dixit",
+        "description": "Global lending platform analytics",
         "color": "blue"
     },
     {
         "name": "FastPaise",
         "url": "https://tinyurl.com/59dtjd88",
         "icon": "⚡",
-        "description": "Ashutosh",
+        "description": "Quick loan performance metrics",
         "color": "green"
     },
     {
         "name": "Jhatpat",
         "url": "https://tinyurl.com/294bc6ns",
         "icon": "🚀",
-        "description": "Vivek",
+        "description": "Instant credit dashboard",
         "color": "orange"
     },
     {
         "name": "Paisa on Salary",
         "url": "https://tinyurl.com/fpxzjfsk",
         "icon": "💰",
-        "description": "Ajay",
+        "description": "Salary-linked lending insights",
         "color": "teal"
     },
     {
         "name": "SnapPaisa",
         "url": "https://tinyurl.com/2p9mdevt",
         "icon": "📸",
-        "description": "Mumbai Team",
+        "description": "Instant approval analytics",
         "color": "purple"
     },
     {
         "name": "Squid Loan",
         "url": "https://tinyurl.com/mphk5xpc",
         "icon": "🦑",
-        "description": "Shashikant",
+        "description": "Flexible loan solutions dashboard",
         "color": "indigo"
     },
     {
         "name": "Tejas",
         "url": "https://tinyurl.com/29sb8js4",
         "icon": "✨",
-        "description": "Nitin",
+        "description": "Premium lending platform",
         "color": "red"
     },
     {
         "name": "Zepto",
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
-        "description": "Arvind Jaiswal",
+        "description": "Lightning-fast credit analytics",
         "color": "pink"
     }
 ]
