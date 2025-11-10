@@ -19,14 +19,29 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    .main {
+    /* Override Streamlit's default backgrounds */
+    .stApp {
         background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+    }
+    
+    .main {
+        background: transparent;
         padding: 0;
     }
     
     .block-container {
         padding: 2rem 3rem;
         max-width: 1600px;
+        background: transparent;
+    }
+    
+    /* Ensure all parent elements have dark background */
+    section[data-testid="stAppViewContainer"] {
+        background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+    }
+    
+    [data-testid="stHeader"] {
+        background: transparent;
     }
     
     /* Header Styling */
