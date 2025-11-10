@@ -138,7 +138,7 @@ st.markdown("""
     }
     
     .card-label {
-        font-size: 0.9rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: rgba(255, 255, 255, 0.95);
         text-transform: uppercase;
@@ -167,7 +167,7 @@ st.markdown("""
     }
     
     .card-description {
-        font-size: 1rem;
+        font-size: 1.15rem;
         color: rgba(255, 255, 255, 0.9);
         font-weight: 500;
     }
