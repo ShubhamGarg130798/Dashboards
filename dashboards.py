@@ -8,134 +8,155 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for vibrant, modern styling
+# Custom CSS for KPI card style
 st.markdown("""
     <style>
     /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
     
     /* Global Styles */
     * {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
     
     .main {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(to bottom, #f0f4ff 0%, #e8eeff 100%);
         padding: 0;
     }
     
-    /* Remove default padding */
     .block-container {
-        padding: 3rem 2rem;
-        max-width: 1400px;
+        padding: 2rem 3rem;
+        max-width: 1600px;
     }
     
     /* Header Styling */
     .header-section {
-        text-align: center;
-        margin-bottom: 3rem;
-        animation: fadeIn 0.8s ease-in;
+        margin-bottom: 2rem;
     }
     
     .main-title {
-        font-size: 4rem;
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 1rem;
-        text-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        letter-spacing: -1px;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        margin-bottom: 0.5rem;
     }
     
-    .subtitle {
-        font-size: 1.4rem;
-        color: rgba(255, 255, 255, 0.95);
-        font-weight: 400;
-    }
-    
-    /* Brand Card Styling */
-    .brand-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
-        border-radius: 24px;
-        padding: 2.5rem;
+    .title-underline {
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(to right, #3b82f6, #8b5cf6);
+        border-radius: 2px;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Brand Card Container */
+    .brand-card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Individual Brand Card */
+    .brand-card {
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
         position: relative;
         overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
-    }
-    
-    .brand-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-        opacity: 0;
-        transition: opacity 0.4s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        min-height: 140px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     
     .brand-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 20px 48px rgba(102, 126, 234, 0.4);
-        border-color: #667eea;
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
     }
     
-    .brand-card:hover::before {
-        opacity: 1;
+    /* Card Colors */
+    .card-blue {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     }
     
-    .brand-icon {
-        font-size: 3.5rem;
+    .card-green {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .card-orange {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .card-teal {
+        background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+    }
+    
+    .card-purple {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    
+    .card-indigo {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .card-red {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .card-pink {
+        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+    
+    /* Card Header */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
         margin-bottom: 1rem;
-        display: block;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
     }
     
-    .brand-name {
-        font-size: 2rem;
+    .card-label {
+        font-size: 0.9rem;
         font-weight: 700;
-        color: #1a202c;
-        margin-bottom: 0.75rem;
-        position: relative;
-        z-index: 1;
+        color: rgba(255, 255, 255, 0.95);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
-    .brand-description {
-        font-size: 1.1rem;
-        color: #4a5568;
-        line-height: 1.6;
-        position: relative;
-        z-index: 1;
+    .card-icon {
+        font-size: 2rem;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 0.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 50px;
+        min-height: 50px;
+    }
+    
+    /* Card Content */
+    .card-brand-name {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+    
+    .card-description {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
     }
     
     /* Link styling */
     a {
         text-decoration: none !important;
         color: inherit !important;
-    }
-    
-    a:hover .brand-card {
-        transform: translateY(-12px) scale(1.02);
-    }
-    
-    /* Animation */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .card-animate {
-        animation: fadeIn 0.6s ease-out forwards;
     }
     
     /* Hide Streamlit elements */
@@ -146,37 +167,20 @@ st.markdown("""
     
     /* Column styling */
     [data-testid="column"] {
-        padding: 0 1rem;
+        padding: 0 0.75rem;
     }
     
-    /* Footer */
-    .footer-text {
-        text-align: center;
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1rem;
-        margin-top: 3rem;
-        padding: 1.5rem;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Responsive design */
+    /* Responsive */
     @media (max-width: 768px) {
-        .main-title {
-            font-size: 2.5rem;
-        }
-        .subtitle {
-            font-size: 1.1rem;
-        }
         .brand-card {
-            padding: 2rem;
+            padding: 1.5rem;
+            min-height: 120px;
         }
-        .brand-icon {
-            font-size: 2.5rem;
+        .card-brand-name {
+            font-size: 1.5rem;
         }
-        .brand-name {
-            font-size: 1.6rem;
+        .main-title {
+            font-size: 2rem;
         }
     }
     </style>
@@ -185,77 +189,89 @@ st.markdown("""
 # Header
 st.markdown("""
     <div class="header-section">
-        <div class="main-title">📊 Brand Dashboards Portal</div>
-        <div class="subtitle">Access all your brand analytics in one place</div>
+        <div class="main-title">Brand Dashboards Portal</div>
+        <div class="title-underline"></div>
     </div>
     """, unsafe_allow_html=True)
 
-# Define your brand dashboards here
-brand_dashboards = {
-    "Duniya": {
+# Define brand dashboards with colors
+brand_dashboards = [
+    {
+        "name": "Duniya",
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
-        "description": "Global lending platform analytics"
+        "description": "Global lending platform analytics",
+        "color": "blue"
     },
-    "FastPaise": {
+    {
+        "name": "FastPaise",
         "url": "https://tinyurl.com/59dtjd88",
         "icon": "⚡",
-        "description": "Quick loan performance metrics"
+        "description": "Quick loan performance metrics",
+        "color": "green"
     },
-    "Jhatpat": {
+    {
+        "name": "Jhatpat",
         "url": "https://tinyurl.com/294bc6ns",
         "icon": "🚀",
-        "description": "Instant credit dashboard"
+        "description": "Instant credit dashboard",
+        "color": "orange"
     },
-    "Paisa on Salary": {
+    {
+        "name": "Paisa on Salary",
         "url": "https://tinyurl.com/fpxzjfsk",
         "icon": "💰",
-        "description": "Salary-linked lending insights"
+        "description": "Salary-linked lending insights",
+        "color": "teal"
     },
-    "SnapPaisa": {
+    {
+        "name": "SnapPaisa",
         "url": "https://tinyurl.com/2p9mdevt",
         "icon": "📸",
-        "description": "Instant approval analytics"
+        "description": "Instant approval analytics",
+        "color": "purple"
     },
-    "Squid Loan": {
+    {
+        "name": "Squid Loan",
         "url": "https://tinyurl.com/mphk5xpc",
         "icon": "🦑",
-        "description": "Flexible loan solutions dashboard"
+        "description": "Flexible loan solutions dashboard",
+        "color": "indigo"
     },
-    "Tejas": {
+    {
+        "name": "Tejas",
         "url": "https://tinyurl.com/29sb8js4",
         "icon": "✨",
-        "description": "Premium lending platform"
+        "description": "Premium lending platform",
+        "color": "red"
     },
-    "Zepto": {
+    {
+        "name": "Zepto",
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
-        "description": "Lightning-fast credit analytics"
-    },
-}
+        "description": "Lightning-fast credit analytics",
+        "color": "pink"
+    }
+]
 
-# Create brand cards in 2-column layout
-brands_list = list(brand_dashboards.items())
-for i in range(0, len(brands_list), 2):
-    cols = st.columns(2, gap="large")
+# Create brand cards in rows of 4
+for i in range(0, len(brand_dashboards), 4):
+    cols = st.columns(4, gap="medium")
     
-    for j in range(2):
-        if i + j < len(brands_list):
-            brand_name, info = brands_list[i + j]
+    for j in range(4):
+        if i + j < len(brand_dashboards):
+            brand = brand_dashboards[i + j]
             with cols[j]:
                 st.markdown(f"""
-                    <a href="{info['url']}" target="_blank">
-                        <div class="brand-card card-animate" style="animation-delay: {(i+j)*0.1}s;">
-                            <div class="brand-icon">{info['icon']}</div>
-                            <div class="brand-name">{brand_name}</div>
-                            <div class="brand-description">{info['description']}</div>
+                    <a href="{brand['url']}" target="_blank">
+                        <div class="brand-card card-{brand['color']}">
+                            <div class="card-header">
+                                <div class="card-label">{brand['name']}</div>
+                                <div class="card-icon">{brand['icon']}</div>
+                            </div>
+                            <div>
+                                <div class="card-description">{brand['description']}</div>
+                            </div>
                         </div>
                     </a>
                     """, unsafe_allow_html=True)
-
-# Footer
-st.markdown("""
-    <div class="footer-text">
-        <strong>Click any card to open the dashboard</strong> • Built with ❤️ using Streamlit
-    </div>
-    """, unsafe_allow_html=True)
