@@ -273,6 +273,13 @@ brand_dashboards = [
         "icon": "⚡",
         "description": "Arvind Jaiswal",
         "color": "pink"
+    },
+    {
+        "name": "FundoBaBa",
+        "url": "https://tinyurl.com/5n9abwcx",
+        "icon": "💼",
+        "description": "Team",
+        "color": "blue"
     }
 ]
 
