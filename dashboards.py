@@ -278,7 +278,7 @@ brand_dashboards = [
         "name": "FundoBaBa",
         "url": "https://tinyurl.com/5n9abwcx",
         "icon": "💼",
-        "description": "Team",
+        "description": "Mumbai Team",
         "color": "blue"
     }
 ]
