@@ -7,183 +7,199 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for modern, professional styling
+# Custom CSS for modern, beautiful styling
 st.markdown("""
     <style>
     /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
     
     /* Global Styles */
     .main {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
+        font-family: 'Poppins', sans-serif;
     }
     
-    .stApp {
-        font-family: 'Inter', sans-serif;
+    /* Remove default padding */
+    .block-container {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
     }
     
     /* Header Styling */
-    h1 {
-        color: white !important;
-        font-weight: 700 !important;
-        font-size: 3rem !important;
-        margin-bottom: 0.5rem !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    .header-container {
+        text-align: center;
+        margin-bottom: 3rem;
     }
     
-    h3 {
-        color: rgba(255,255,255,0.9) !important;
-        font-weight: 400 !important;
-        margin-bottom: 2rem !important;
+    .main-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
     }
     
-    /* Card Container */
-    .dashboard-card {
+    .subtitle {
+        font-size: 1.3rem;
+        color: rgba(255,255,255,0.95);
+        font-weight: 400;
+    }
+    
+    /* Brand Cards Container */
+    .brands-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Individual Brand Card */
+    .brand-card {
         background: white;
         border-radius: 20px;
-        padding: 2.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-    
-    /* Button Styling */
-    .stButton>button {
-        width: 100%;
-        height: 120px;
-        font-size: 20px;
-        font-weight: 600;
-        border-radius: 15px;
-        border: none;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        cursor: pointer;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-    }
-    
-    .stButton>button:active {
-        transform: translateY(-2px);
-    }
-    
-    /* Section Styling */
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2d3748;
+        padding: 2rem;
         margin-bottom: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
     }
     
-    /* Expander Styling */
-    .streamlit-expanderHeader {
-        background: #f7fafc;
-        border-radius: 10px;
-        font-weight: 600;
+    .brand-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        border-color: #667eea;
+    }
+    
+    .brand-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .brand-name {
+        font-size: 1.8rem;
+        font-weight: 700;
         color: #2d3748;
-    }
-    
-    /* Links Styling */
-    a {
+        margin-bottom: 0.5rem;
         text-decoration: none;
+    }
+    
+    .brand-description {
+        font-size: 1rem;
+        color: #718096;
+        margin-top: 0.5rem;
+    }
+    
+    /* Link styling */
+    a {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+    
+    a:hover .brand-name {
         color: #667eea;
-        font-weight: 600;
-        transition: color 0.3s ease;
     }
     
-    a:hover {
-        color: #764ba2;
-    }
-    
-    /* Footer */
-    .footer {
-        text-align: center;
-        padding: 2rem 0 1rem 0;
-        color: rgba(255,255,255,0.8);
-        font-size: 0.9rem;
-    }
-    
-    /* Hide Streamlit branding */
+    /* Hide Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    .stDeployButton {display:none;}
     
-    /* Success message styling */
-    .stSuccess {
-        background: #48bb78;
-        color: white;
-        border-radius: 10px;
-        padding: 1rem;
-        font-weight: 600;
+    /* Column styling */
+    [data-testid="column"] {
+        padding: 0 1rem;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .main-title {
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            font-size: 1rem;
+        }
+        .brand-card {
+            padding: 1.5rem;
+        }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# App header
-st.markdown('<h1>📊 Brand Dashboards Portal</h1>', unsafe_allow_html=True)
-st.markdown('<h3>Access all your brand analytics in one place</h3>', unsafe_allow_html=True)
+# Header
+st.markdown("""
+    <div class="header-container">
+        <div class="main-title">📊 Brand Dashboards Portal</div>
+        <div class="subtitle">Access all your brand analytics in one place</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Define your brand dashboards here
-# Format: {"Brand Name": {"url": "Dashboard URL", "icon": "emoji", "description": "text"}}
 brand_dashboards = {
     "Duniya": {
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
-        "description": "Duniya Dashboard"
+        "description": "Global lending platform analytics"
     },
     "FastPaise": {
         "url": "https://tinyurl.com/59dtjd88",
         "icon": "⚡",
-        "description": "FastPaise Dashboard"
+        "description": "Quick loan performance metrics"
     },
     "Jhatpat": {
         "url": "https://tinyurl.com/294bc6ns",
         "icon": "🚀",
-        "description": "Jhatpat Dashboard"
+        "description": "Instant credit dashboard"
     },
     "Paisa on Salary": {
         "url": "https://tinyurl.com/fpxzjfsk",
         "icon": "💰",
-        "description": "Paisa on Salary Dashboard"
+        "description": "Salary-linked lending insights"
     },
     "SnapPaisa": {
         "url": "https://tinyurl.com/2p9mdevt",
         "icon": "📸",
-        "description": "SnapPaisa Dashboard"
+        "description": "Instant approval analytics"
     },
     "Squid Loan": {
         "url": "https://tinyurl.com/mphk5xpc",
         "icon": "🦑",
-        "description": "Squid Loan Dashboard"
+        "description": "Flexible loan solutions dashboard"
     },
     "Tejas": {
         "url": "https://tinyurl.com/29sb8js4",
         "icon": "✨",
-        "description": "Tejas Dashboard"
+        "description": "Premium lending platform"
     },
     "Zepto": {
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
-        "description": "Zepto Dashboard"
+        "description": "Lightning-fast credit analytics"
     },
 }
 
-# Brand dashboards section with direct links
-st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
-st.markdown('<div class="section-title">Select a brand to view its dashboard</div>', unsafe_allow_html=True)
+# Create brand cards in 2-column layout
+st.markdown('<div class="brands-container">', unsafe_allow_html=True)
 
-# Display all brands in a clean grid
-cols = st.columns(2, gap="large")
-for idx, (name, info) in enumerate(brand_dashboards.items()):
-    with cols[idx % 2]:
-        st.markdown(f"### {info['icon']} [{name}]({info['url']})")
-        st.markdown(f"<p style='color: #718096; margin-top: -1rem;'>{info['description']}</p>", unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+brands_list = list(brand_dashboards.items())
+for i in range(0, len(brands_list), 2):
+    cols = st.columns(2, gap="large")
+    
+    for j in range(2):
+        if i + j < len(brands_list):
+            brand_name, info = brands_list[i + j]
+            with cols[j]:
+                st.markdown(f"""
+                    <a href="{info['url']}" target="_blank">
+                        <div class="brand-card">
+                            <div class="brand-icon">{info['icon']}</div>
+                            <div class="brand-name">{brand_name}</div>
+                            <div class="brand-description">{info['description']}</div>
+                        </div>
+                    </a>
+                    """, unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
-st.markdown('<div class="footer">Brand Dashboards Portal | Built with Streamlit 🎈</div>', unsafe_allow_html=True)
+st.markdown("""
+    <div style="text-align: center; margin-top: 3rem; color: rgba(255,255,255,0.8);">
+        <p style="font-size: 0.9rem;">Built with Streamlit 🎈 | Click any card to open dashboard</p>
+    </div>
+    """, unsafe_allow_html=True)
