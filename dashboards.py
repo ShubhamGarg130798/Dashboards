@@ -268,7 +268,7 @@ brand_dashboards = [
         "color": "red"
     },
     {
-        "name": "Zepto",
+        "name": "Zepto Finance",
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
         "description": "Arvind Jaiswal",
