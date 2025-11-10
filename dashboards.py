@@ -33,10 +33,11 @@ st.markdown("""
     .header-section {
         margin-bottom: 3rem;
         padding-bottom: 1.5rem;
+        text-align: center;
     }
     
     .main-title {
-        font-size: 4.5rem;
+        font-size: 3.5rem;
         font-weight: 900;
         color: #1e3a8a;
         margin-bottom: 1rem;
@@ -49,7 +50,7 @@ st.markdown("""
         height: 6px;
         background: linear-gradient(to right, #3b82f6, #8b5cf6);
         border-radius: 3px;
-        margin-bottom: 0;
+        margin: 0 auto;
     }
     
     /* Brand Card Container */
