@@ -21,7 +21,7 @@ st.markdown("""
     
     /* Override Streamlit's default backgrounds */
     .stApp {
-        background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+        background: #ffffff;
     }
     
     .main {
@@ -35,9 +35,9 @@ st.markdown("""
         background: transparent;
     }
     
-    /* Ensure all parent elements have dark background */
+    /* Ensure all parent elements have white background */
     section[data-testid="stAppViewContainer"] {
-        background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+        background: #ffffff;
     }
     
     [data-testid="stHeader"] {
@@ -54,7 +54,7 @@ st.markdown("""
     .main-title {
         font-size: 3.5rem;
         font-weight: 900;
-        color: #60a5fa;
+        color: #2563eb;
         margin-bottom: 1rem;
         letter-spacing: -1px;
         line-height: 1.1;
