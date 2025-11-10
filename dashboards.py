@@ -20,7 +20,7 @@ st.markdown("""
     }
     
     .main {
-        background: linear-gradient(to bottom, #f0f4ff 0%, #e8eeff 100%);
+        background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
         padding: 0;
     }
     
@@ -39,7 +39,7 @@ st.markdown("""
     .main-title {
         font-size: 3.5rem;
         font-weight: 900;
-        color: #1e3a8a;
+        color: #60a5fa;
         margin-bottom: 1rem;
         letter-spacing: -1px;
         line-height: 1.1;
