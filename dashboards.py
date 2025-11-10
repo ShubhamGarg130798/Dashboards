@@ -4,91 +4,112 @@ import streamlit as st
 st.set_page_config(
     page_title="Brand Dashboards",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for modern, beautiful styling
+# Custom CSS for vibrant, modern styling
 st.markdown("""
     <style>
     /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
     
     /* Global Styles */
-    .main {
-        background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+    * {
         font-family: 'Poppins', sans-serif;
+    }
+    
+    .main {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 0;
     }
     
     /* Remove default padding */
     .block-container {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
+        padding: 3rem 2rem;
+        max-width: 1400px;
     }
     
     /* Header Styling */
-    .header-container {
+    .header-section {
         text-align: center;
         margin-bottom: 3rem;
-        background: rgba(255, 255, 255, 0.1);
-        padding: 2rem;
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
+        animation: fadeIn 0.8s ease-in;
     }
     
     .main-title {
-        font-size: 3.5rem;
+        font-size: 4rem;
         font-weight: 700;
-        color: #ffffff !important;
-        margin-bottom: 0.5rem;
-        text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+        color: #ffffff;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        letter-spacing: -1px;
     }
     
     .subtitle {
-        font-size: 1.3rem;
-        color: #f0f0f0 !important;
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.95);
         font-weight: 400;
     }
     
-    /* Brand Cards Container */
-    .brands-container {
-        max-width: 1400px;
-        margin: 0 auto;
+    /* Brand Card Styling */
+    .brand-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
     }
     
-    /* Individual Brand Card */
-    .brand-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        border: 3px solid transparent;
+    .brand-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
     }
     
     .brand-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 20px 48px rgba(102, 126, 234, 0.4);
         border-color: #667eea;
     }
     
+    .brand-card:hover::before {
+        opacity: 1;
+    }
+    
     .brand-icon {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        display: block;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
     }
     
     .brand-name {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-        text-decoration: none;
+        color: #1a202c;
+        margin-bottom: 0.75rem;
+        position: relative;
+        z-index: 1;
     }
     
     .brand-description {
-        font-size: 1rem;
-        color: #718096;
-        margin-top: 0.5rem;
+        font-size: 1.1rem;
+        color: #4a5568;
+        line-height: 1.6;
+        position: relative;
+        z-index: 1;
     }
     
     /* Link styling */
@@ -97,18 +118,47 @@ st.markdown("""
         color: inherit !important;
     }
     
-    a:hover .brand-name {
-        color: #667eea;
+    a:hover .brand-card {
+        transform: translateY(-12px) scale(1.02);
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .card-animate {
+        animation: fadeIn 0.6s ease-out forwards;
     }
     
     /* Hide Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display:none;}
+    header {visibility: hidden;}
     
     /* Column styling */
     [data-testid="column"] {
         padding: 0 1rem;
+    }
+    
+    /* Footer */
+    .footer-text {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        margin-top: 3rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
     }
     
     /* Responsive design */
@@ -117,10 +167,16 @@ st.markdown("""
             font-size: 2.5rem;
         }
         .subtitle {
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
         .brand-card {
-            padding: 1.5rem;
+            padding: 2rem;
+        }
+        .brand-icon {
+            font-size: 2.5rem;
+        }
+        .brand-name {
+            font-size: 1.6rem;
         }
     }
     </style>
@@ -128,7 +184,7 @@ st.markdown("""
 
 # Header
 st.markdown("""
-    <div class="header-container">
+    <div class="header-section">
         <div class="main-title">📊 Brand Dashboards Portal</div>
         <div class="subtitle">Access all your brand analytics in one place</div>
     </div>
@@ -179,8 +235,6 @@ brand_dashboards = {
 }
 
 # Create brand cards in 2-column layout
-st.markdown('<div class="brands-container">', unsafe_allow_html=True)
-
 brands_list = list(brand_dashboards.items())
 for i in range(0, len(brands_list), 2):
     cols = st.columns(2, gap="large")
@@ -191,7 +245,7 @@ for i in range(0, len(brands_list), 2):
             with cols[j]:
                 st.markdown(f"""
                     <a href="{info['url']}" target="_blank">
-                        <div class="brand-card">
+                        <div class="brand-card card-animate" style="animation-delay: {(i+j)*0.1}s;">
                             <div class="brand-icon">{info['icon']}</div>
                             <div class="brand-name">{brand_name}</div>
                             <div class="brand-description">{info['description']}</div>
@@ -199,11 +253,9 @@ for i in range(0, len(brands_list), 2):
                     </a>
                     """, unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
-
 # Footer
 st.markdown("""
-    <div style="text-align: center; margin-top: 3rem; color: rgba(255,255,255,0.8);">
-        <p style="font-size: 0.9rem;">Built with Streamlit 🎈 | Click any card to open dashboard</p>
+    <div class="footer-text">
+        <strong>Click any card to open the dashboard</strong> • Built with ❤️ using Streamlit
     </div>
     """, unsafe_allow_html=True)
