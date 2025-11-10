@@ -1,4 +1,5 @@
 import streamlit as st
+import base64
 
 # Set page configuration
 st.set_page_config(
@@ -157,6 +158,24 @@ st.markdown("""
         min-height: 50px;
     }
     
+    .card-logo {
+        background: white;
+        padding: 0.8rem 1.2rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 180px;
+        max-height: 60px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-logo img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+    
     /* Card Content */
     .card-brand-name {
         font-size: 2rem;
@@ -222,7 +241,7 @@ brand_dashboards = [
     {
         "name": "Duniya",
         "url": "https://tinyurl.com/nhzvpuy6",
-        "icon": "🌍",
+        "logo": "Duniya_Finance.png",
         "description": "Harsh",
         "color": "blue"
     },
@@ -292,12 +311,23 @@ for i in range(0, len(brand_dashboards), 4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
             with cols[j]:
+                # Check if brand has logo or icon
+                if 'logo' in brand:
+                    icon_html = f'<div class="card-logo"><img src="data:image/png;base64,{{logo_base64}}" alt="{brand["name"]} logo"></div>'
+                    # We'll need to encode the image
+                    import base64
+                    with open(f"/mnt/user-data/outputs/{brand['logo']}", "rb") as img_file:
+                        logo_base64 = base64.b64encode(img_file.read()).decode()
+                    icon_html = f'<div class="card-logo"><img src="data:image/png;base64,{logo_base64}" alt="{brand["name"]} logo"></div>'
+                else:
+                    icon_html = f'<div class="card-icon">{brand["icon"]}</div>'
+                
                 st.markdown(f"""
                     <a href="{brand['url']}" target="_blank">
                         <div class="brand-card card-{brand['color']}">
                             <div class="card-header">
                                 <div class="card-label">{brand['name']}</div>
-                                <div class="card-icon">{brand['icon']}</div>
+                                {icon_html}
                             </div>
                             <div>
                                 <div class="card-description">{brand['description']}</div>
