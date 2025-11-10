@@ -207,56 +207,56 @@ brand_dashboards = [
         "name": "Duniya",
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
-        "description": "Global lending platform analytics",
+        "description": "Harsh",
         "color": "blue"
     },
     {
         "name": "FastPaise",
         "url": "https://tinyurl.com/59dtjd88",
         "icon": "⚡",
-        "description": "Quick loan performance metrics",
+        "description": "Ashutosh",
         "color": "green"
     },
     {
         "name": "Jhatpat",
         "url": "https://tinyurl.com/294bc6ns",
         "icon": "🚀",
-        "description": "Instant credit dashboard",
+        "description": "Vivek",
         "color": "orange"
     },
     {
         "name": "Paisa on Salary",
         "url": "https://tinyurl.com/fpxzjfsk",
         "icon": "💰",
-        "description": "Salary-linked lending insights",
+        "description": "Ajay",
         "color": "teal"
     },
     {
         "name": "SnapPaisa",
         "url": "https://tinyurl.com/2p9mdevt",
         "icon": "📸",
-        "description": "Instant approval analytics",
+        "description": "Mumbai Team",
         "color": "purple"
     },
     {
         "name": "Squid Loan",
         "url": "https://tinyurl.com/mphk5xpc",
         "icon": "🦑",
-        "description": "Flexible loan solutions dashboard",
+        "description": "Shashikant",
         "color": "indigo"
     },
     {
         "name": "Tejas",
         "url": "https://tinyurl.com/29sb8js4",
         "icon": "✨",
-        "description": "Premium lending platform",
+        "description": "Nitin",
         "color": "red"
     },
     {
         "name": "Zepto",
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
-        "description": "Lightning-fast credit analytics",
+        "description": "Arvind Jaiswal",
         "color": "pink"
     }
 ]
