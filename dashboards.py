@@ -138,11 +138,11 @@ st.markdown("""
     }
     
     .card-label {
-        font-size: 1.1rem;
-        font-weight: 700;
+        font-size: 1.4rem;
+        font-weight: 800;
         color: rgba(255, 255, 255, 0.95);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        text-transform: capitalize;
+        letter-spacing: 0.3px;
     }
     
     .card-icon {
@@ -167,9 +167,10 @@ st.markdown("""
     }
     
     .card-description {
-        font-size: 1.15rem;
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 500;
+        font-size: 1.35rem;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 600;
+        font-style: italic;
     }
     
     /* Link styling */
