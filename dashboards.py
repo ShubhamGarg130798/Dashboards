@@ -38,7 +38,7 @@ st.markdown("---")
 # Define your brand dashboards here
 # Format: {"Brand Name": "Dashboard URL"}
 brand_dashboards = {
-    "Brand A": "https://your-brand-a-dashboard.com",
+    "Brand A": "https://tinyurl.com/nhzvpuy6",
     "Brand B": "https://your-brand-b-dashboard.com",
     "Brand C": "https://your-brand-c-dashboard.com",
     "Brand D": "https://your-brand-d-dashboard.com",
