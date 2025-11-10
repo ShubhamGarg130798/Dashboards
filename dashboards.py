@@ -171,41 +171,18 @@ brand_dashboards = {
     },
 }
 
-# Main dashboard grid
+# Brand dashboards section with direct links
 st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Select a brand to view its dashboard</div>', unsafe_allow_html=True)
 
-# Create columns for grid layout (3 columns per row for better spacing)
-cols_per_row = 3
-brands = list(brand_dashboards.items())
+# Display all brands in a clean grid
+cols = st.columns(2, gap="large")
+for idx, (name, info) in enumerate(brand_dashboards.items()):
+    with cols[idx % 2]:
+        st.markdown(f"### {info['icon']} [{name}]({info['url']})")
+        st.markdown(f"<p style='color: #718096; margin-top: -1rem;'>{info['description']}</p>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
 
-for i in range(0, len(brands), cols_per_row):
-    cols = st.columns(cols_per_row, gap="large")
-    for j, col in enumerate(cols):
-        if i + j < len(brands):
-            brand_name, brand_info = brands[i + j]
-            with col:
-                # Create custom button with icon
-                button_label = f"{brand_info['icon']} {brand_name}"
-                if st.button(button_label, key=brand_name, use_container_width=True):
-                    st.markdown(f'<meta http-equiv="refresh" content="0; url={brand_info["url"]}">', unsafe_allow_html=True)
-                    st.success(f"✓ Opening {brand_name} dashboard...")
-                
-                # Description below button
-                st.markdown(f"<p style='text-align: center; color: #718096; font-size: 0.9rem; margin-top: -0.5rem;'>{brand_info['description']}</p>", unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Quick links section with better styling
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
-with st.expander("🔗 Quick Links (Open in new tab)"):
-    cols = st.columns(2, gap="medium")
-    for idx, (name, info) in enumerate(brand_dashboards.items()):
-        with cols[idx % 2]:
-            st.markdown(f"### {info['icon']} [{name}]({info['url']})")
-            st.markdown(f"*{info['description']}*")
-            st.markdown("---")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
