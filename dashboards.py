@@ -31,22 +31,24 @@ st.markdown("""
     
     /* Header Styling */
     .header-section {
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
+        padding-bottom: 1rem;
     }
     
     .main-title {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         font-weight: 800;
         color: #1e3a8a;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.5px;
     }
     
     .title-underline {
-        width: 100px;
-        height: 4px;
+        width: 120px;
+        height: 5px;
         background: linear-gradient(to right, #3b82f6, #8b5cf6);
-        border-radius: 2px;
-        margin-bottom: 2rem;
+        border-radius: 3px;
+        margin-bottom: 0;
     }
     
     /* Brand Card Container */
@@ -59,14 +61,14 @@ st.markdown("""
     
     /* Individual Brand Card */
     .brand-card {
-        border-radius: 20px;
-        padding: 2rem 2.5rem;
+        border-radius: 24px;
+        padding: 2rem;
         position: relative;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        min-height: 140px;
+        height: 180px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -256,7 +258,7 @@ brand_dashboards = [
 
 # Create brand cards in rows of 4
 for i in range(0, len(brand_dashboards), 4):
-    cols = st.columns(4, gap="medium")
+    cols = st.columns(4, gap="large")
     
     for j in range(4):
         if i + j < len(brand_dashboards):
@@ -275,3 +277,7 @@ for i in range(0, len(brand_dashboards), 4):
                         </div>
                     </a>
                     """, unsafe_allow_html=True)
+    
+    # Add spacing between rows
+    if i + 4 < len(brand_dashboards):
+        st.markdown("<br>", unsafe_allow_html=True)
