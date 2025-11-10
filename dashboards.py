@@ -15,7 +15,7 @@ st.markdown("""
     
     /* Global Styles */
     .main {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
         font-family: 'Poppins', sans-serif;
     }
     
@@ -29,19 +29,23 @@ st.markdown("""
     .header-container {
         text-align: center;
         margin-bottom: 3rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
     }
     
     .main-title {
         font-size: 3.5rem;
         font-weight: 700;
-        color: white;
+        color: #ffffff !important;
         margin-bottom: 0.5rem;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+        text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
     }
     
     .subtitle {
         font-size: 1.3rem;
-        color: rgba(255,255,255,0.95);
+        color: #f0f0f0 !important;
         font-weight: 400;
     }
     
