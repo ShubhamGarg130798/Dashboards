@@ -295,6 +295,13 @@ brand_dashboards = [
         "icon": "💸",
         "description": "Vivek & Pranit",
         "color": "orange"
+    },
+    {
+        "name": "Salary Adda",
+        "url": "https://tinyurl.com/4cd79c5b",
+        "icon": "💳",
+        "description": "Asim",
+        "color": "teal"
     }
 ]
 
