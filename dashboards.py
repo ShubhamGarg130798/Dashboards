@@ -281,6 +281,13 @@ brand_dashboards = [
         "icon": "💼",
         "description": "Mumbai Team",
         "color": "blue"
+    },
+    {
+        "name": "Salary Setu",
+        "url": "https://tinyurl.com/2we6eyvf",
+        "icon": "💵",
+        "description": "Prajwal",
+        "color": "green"
     }
 ]
 
