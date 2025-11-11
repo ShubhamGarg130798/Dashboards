@@ -288,6 +288,13 @@ brand_dashboards = [
         "icon": "💵",
         "description": "Prajwal",
         "color": "green"
+    },
+    {
+        "name": "Salary 4 Sure",
+        "url": "https://tinyurl.com/bdfdufas",
+        "icon": "💸",
+        "description": "Vivek & Pranit",
+        "color": "orange"
     }
 ]
 
