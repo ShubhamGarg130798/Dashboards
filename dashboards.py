@@ -221,7 +221,7 @@ st.markdown("""
         margin: 0 auto;
     }
     
-/* Brand Card Container */
+    /* Brand Card Container */
     .brand-card-container {
         display: flex;
         flex-direction: column;
@@ -238,7 +238,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 180px;
+        height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -287,11 +287,11 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
     
     .card-label {
-        font-size: 1.4rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: rgba(255, 255, 255, 0.95);
         text-transform: capitalize;
@@ -299,47 +299,47 @@ st.markdown("""
     }
     
     .card-icon {
-        font-size: 2rem;
+        font-size: 1.5rem;
         background: rgba(255, 255, 255, 0.25);
-        padding: 0.5rem;
-        border-radius: 12px;
+        padding: 0.4rem;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-width: 50px;
-        min-height: 50px;
+        min-width: 40px;
+        min-height: 40px;
     }
     
     /* Card Content */
     .card-brand-name {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 800;
         color: white;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
         line-height: 1.2;
     }
     
     .card-description {
-        font-size: 1.1rem;
+        font-size: 0.9rem;
         color: rgba(255, 255, 255, 0.95);
         font-weight: 600;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
     }
     
     .card-target {
-        font-size: 1rem;
+        font-size: 0.85rem;
         color: rgba(255, 255, 255, 0.85);
         font-weight: 500;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
     }
     
     .card-metric {
-        font-size: 1.15rem;
+        font-size: 1rem;
         color: rgba(255, 255, 255, 1);
         font-weight: 800;
         background: rgba(255, 255, 255, 0.25);
-        padding: 0.5rem 1rem;
-        border-radius: 10px;
+        padding: 0.5rem 0.85rem;
+        border-radius: 8px;
         display: inline-block;
         margin-top: 0.4rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
@@ -359,7 +359,7 @@ st.markdown("""
     
     /* Column styling */
     [data-testid="column"] {
-        padding: 0 0.75rem;
+        padding: 0 0.4rem;
     }
     
     /* Responsive */
