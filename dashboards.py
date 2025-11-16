@@ -739,6 +739,8 @@ st.markdown(f"""
     """, unsafe_allow_html=True)
 
 # Display MTD Target Summary Card - SECOND ROW: Total MTD Target, Total MTD Disbursement, Total Shortfall
+shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
+
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
                 border-radius: 24px; 
@@ -771,6 +773,9 @@ st.markdown(f"""
                 </div>
                 <div style="font-size: 3rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'}; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);">
                     {format_total(abs(mtd_shortfall))}
+                </div>
+                <div style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.5rem;">
+                    {'↓' if mtd_shortfall > 0 else '↑'} {shortfall_percentage:.1f}%
                 </div>
             </div>
         </div>
