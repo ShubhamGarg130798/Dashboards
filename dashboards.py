@@ -424,8 +424,8 @@ brand_dashboards = [
         "url": "https://tinyurl.com/5n9abwcx",
         "icon": "💼",
         "description": "Mumbai Team",
-        "target": "₹26 Cr",
-        "target_value": 26,
+        "target": "₹25 Cr",
+        "target_value": 25,
         "metabase_card_id": 441,
         "metric_label": "MTD Disb",
         "color": "blue"
