@@ -221,24 +221,24 @@ st.markdown("""
         margin: 0 auto;
     }
     
-    /* Brand Card Container */
+/* Brand Card Container */
     .brand-card-container {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
     }
     
     /* Individual Brand Card */
     .brand-card {
-        border-radius: 24px;
-        padding: 2rem;
+        border-radius: 16px;
+        padding: 1.25rem;
         position: relative;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 240px;
+        height: 180px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
