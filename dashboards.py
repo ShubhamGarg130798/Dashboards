@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+import calendar
 
 # Set page configuration
 st.set_page_config(
@@ -63,6 +64,9 @@ st.markdown("""
         position: absolute;
         right: 3rem;
         top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
     
     .current-date {
@@ -73,6 +77,17 @@ st.markdown("""
         padding: 0.75rem 1.5rem;
         border-radius: 12px;
         border: 2px solid #e2e8f0;
+    }
+    
+    .days-left {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #f59e0b;
+        background: #fef3c7;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        border: 2px solid #fbbf24;
+        text-align: center;
     }
     
     .main-title {
@@ -250,8 +265,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Get current date
-current_date = datetime.now().strftime("%d %B %Y")
+# Get current date and calculate days left in month
+now = datetime.now()
+current_date = now.strftime("%d %B %Y")
+current_day = now.day
+days_in_month = calendar.monthrange(now.year, now.month)[1]
+days_left = days_in_month - current_day
 
 # Header
 st.markdown(f"""
@@ -262,6 +281,7 @@ st.markdown(f"""
         </div>
         <div class="header-right">
             <div class="current-date">📅 {current_date}</div>
+            <div class="days-left">⏰ {days_left} days left in month</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
