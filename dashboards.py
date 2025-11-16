@@ -713,7 +713,7 @@ with cols[0]:
                     padding: 2rem; 
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                     border: 2px solid rgba(255, 255, 255, 0.1);
-                    height: 100%;
+                    min-height: 380px;
                     display: flex;
                     flex-direction: column;">
             <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
@@ -746,7 +746,7 @@ with cols[1]:
                     padding: 2rem; 
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                     border: 2px solid rgba(255, 255, 255, 0.1);
-                    height: 100%;
+                    min-height: 380px;
                     display: flex;
                     flex-direction: column;">
             <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
@@ -782,7 +782,7 @@ with cols[2]:
                     padding: 2rem; 
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                     border: 2px solid rgba(255, 255, 255, 0.1);
-                    height: 100%;
+                    min-height: 380px;
                     display: flex;
                     flex-direction: column;">
             <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
