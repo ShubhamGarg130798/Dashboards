@@ -230,7 +230,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
         "description": "Harsh",
-        "target": "₹50L",
+        "target": "₹15 Cr",
         "color": "blue"
     },
     {
@@ -238,7 +238,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/59dtjd88",
         "icon": "⚡",
         "description": "Ashutosh",
-        "target": "₹75L",
+        "target": "₹18 Cr",
         "color": "green"
     },
     {
@@ -246,7 +246,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/294bc6ns",
         "icon": "🚀",
         "description": "Vivek",
-        "target": "₹60L",
+        "target": "₹3 Cr",
         "color": "orange"
     },
     {
@@ -254,7 +254,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/fpxzjfsk",
         "icon": "💰",
         "description": "Ajay",
-        "target": "₹80L",
+        "target": "₹5 Cr",
         "color": "teal"
     },
     {
@@ -262,7 +262,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/2p9mdevt",
         "icon": "📸",
         "description": "Mumbai Team",
-        "target": "₹1Cr",
+        "target": "₹18 Cr",
         "color": "purple"
     },
     {
@@ -270,7 +270,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/mphk5xpc",
         "icon": "🦑",
         "description": "Shashikant",
-        "target": "₹90L",
+        "target": "₹5 Cr",
         "color": "indigo"
     },
     {
@@ -278,7 +278,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/29sb8js4",
         "icon": "✨",
         "description": "Nitin",
-        "target": "₹70L",
+        "target": "₹15 Cr",
         "color": "red"
     },
     {
@@ -286,7 +286,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
         "description": "Arvind Jaiswal",
-        "target": "₹1.2Cr",
+        "target": "₹9 Cr",
         "color": "pink"
     },
     {
@@ -294,7 +294,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/5n9abwcx",
         "icon": "💼",
         "description": "Mumbai Team",
-        "target": "₹85L",
+        "target": "₹25 Cr",
         "color": "blue"
     },
     {
@@ -302,7 +302,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/2we6eyvf",
         "icon": "💵",
         "description": "Prajwal",
-        "target": "₹95L",
+        "target": "₹11 Cr",
         "color": "green"
     },
     {
@@ -310,7 +310,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/bdfdufas",
         "icon": "💸",
         "description": "Vivek & Pranit",
-        "target": "₹1.5Cr",
+        "target": "₹15 Cr",
         "color": "orange"
     },
     {
@@ -318,7 +318,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/4cd79c5b",
         "icon": "💳",
         "description": "Asim",
-        "target": "₹65L",
+        "target": "₹10 Cr",
         "color": "teal"
     }
 ]
