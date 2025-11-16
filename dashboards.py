@@ -279,7 +279,7 @@ st.markdown("""
     /* Individual Brand Card */
     .brand-card {
         border-radius: 16px;
-        padding: 1.25rem 1.25rem 1rem 1.25rem;
+        padding: 1.25rem 1.25rem 1.5rem 1.25rem;
         position: relative;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
