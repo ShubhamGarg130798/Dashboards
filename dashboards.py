@@ -475,6 +475,7 @@ brand_dashboards = [
         "target": "₹25 Cr",
         "target_value": 25,
         "metabase_card_id": 441,
+        "pmtd_card_id": 456,
         "collection_card_id": 453,
         "metric_label": "MTD Disb",
         "color": "blue"
@@ -487,6 +488,7 @@ brand_dashboards = [
         "target": "₹18 Cr",
         "target_value": 18,
         "metabase_card_id": 432,
+        "pmtd_card_id": 460,
         "collection_card_id": 445,
         "metric_label": "MTD Disb",
         "color": "green"
@@ -499,6 +501,7 @@ brand_dashboards = [
         "target": "₹18 Cr",
         "target_value": 18,
         "metabase_card_id": 437,
+        "pmtd_card_id": 464,
         "collection_card_id": 449,
         "metric_label": "MTD Disb",
         "color": "purple"
@@ -511,6 +514,7 @@ brand_dashboards = [
         "target": "₹15 Cr",
         "target_value": 15,
         "metabase_card_id": 433,
+        "pmtd_card_id": 459,
         "collection_card_id": 444,
         "metric_label": "MTD Disb",
         "color": "blue"
@@ -523,6 +527,7 @@ brand_dashboards = [
         "target": "₹15 Cr",
         "target_value": 15,
         "metabase_card_id": 439,
+        "pmtd_card_id": 466,
         "collection_card_id": 451,
         "metric_label": "MTD Disb",
         "color": "red"
@@ -535,6 +540,7 @@ brand_dashboards = [
         "target": "₹15 Cr",
         "target_value": 15,
         "metabase_card_id": 436,
+        "pmtd_card_id": 463,
         "collection_card_id": 448,
         "metric_label": "MTD Disb",
         "color": "orange"
@@ -547,6 +553,7 @@ brand_dashboards = [
         "target": "₹11 Cr",
         "target_value": 11,
         "metabase_card_id": 443,
+        "pmtd_card_id": 458,
         "collection_card_id": 455,
         "metric_label": "MTD Disb",
         "color": "green"
@@ -559,6 +566,7 @@ brand_dashboards = [
         "target": "₹10 Cr",
         "target_value": 10,
         "metabase_card_id": 442,
+        "pmtd_card_id": 457,
         "collection_card_id": 454,
         "metric_label": "MTD Disb",
         "color": "teal"
@@ -571,6 +579,7 @@ brand_dashboards = [
         "target": "₹9 Cr",
         "target_value": 9,
         "metabase_card_id": 440,
+        "pmtd_card_id": 467,
         "collection_card_id": 452,
         "metric_label": "MTD Disb",
         "color": "pink"
@@ -583,6 +592,7 @@ brand_dashboards = [
         "target": "₹5 Cr",
         "target_value": 5,
         "metabase_card_id": 435,
+        "pmtd_card_id": 462,
         "collection_card_id": 447,
         "metric_label": "MTD Disb",
         "color": "teal"
@@ -595,6 +605,7 @@ brand_dashboards = [
         "target": "₹5 Cr",
         "target_value": 5,
         "metabase_card_id": 438,
+        "pmtd_card_id": 465,
         "collection_card_id": 450,
         "metric_label": "MTD Disb",
         "color": "indigo"
@@ -607,18 +618,22 @@ brand_dashboards = [
         "target": "₹3 Cr",
         "target_value": 3,
         "metabase_card_id": 434,
+        "pmtd_card_id": 461,
         "collection_card_id": 446,
         "metric_label": "MTD Disb",
         "color": "orange"
     }
 ]
 
-# Fetch all metrics and calculate total
+# Fetch all metrics and calculate totals
 total_disbursement = 0
+total_pmtd_disbursement = 0
 brand_metrics = {}
+brand_pmtd_metrics = {}
 brand_collections = {}
 
 for brand in brand_dashboards:
+    # Fetch MTD Disbursement
     if brand['metabase_card_id']:
         metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
         brand_metrics[brand['name']] = metric_value
@@ -626,6 +641,15 @@ for brand in brand_dashboards:
     else:
         brand_metrics[brand['name']] = "Coming Soon"
     
+    # Fetch PMTD Disbursement
+    if brand['pmtd_card_id']:
+        pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
+        brand_pmtd_metrics[brand['name']] = pmtd_value
+        total_pmtd_disbursement += parse_metric_value(pmtd_value)
+    else:
+        brand_pmtd_metrics[brand['name']] = "Coming Soon"
+    
+    # Fetch Collection %
     if brand['collection_card_id']:
         collection_value = fetch_collection_percentage(brand['collection_card_id'], metabase_token)
         brand_collections[brand['name']] = collection_value
@@ -634,6 +658,10 @@ for brand in brand_dashboards:
 
 # Calculate total target
 total_target = sum([brand['target_value'] for brand in brand_dashboards])
+
+# Calculate MoM Growth
+mom_growth = total_disbursement - total_pmtd_disbursement
+mom_growth_percentage = (mom_growth / total_pmtd_disbursement * 100) if total_pmtd_disbursement > 0 else 0
 
 # Calculate Total MTD Target based on current day
 def calculate_mtd_target(current_day, total_target_cr):
@@ -671,7 +699,7 @@ def calculate_mtd_target(current_day, total_target_cr):
 mtd_target_amount = calculate_mtd_target(current_day, total_target)
 mtd_shortfall = mtd_target_amount - total_disbursement
 
-# Display summary card - REORDERED: Total Target, Total MTD Disbursement, Achievement
+# Display summary card - FIRST ROW: Total Target, Total MTD Disbursement, Achievement
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
                 border-radius: 24px; 
@@ -710,12 +738,12 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Display MTD Target Summary Card - REORDERED: Total MTD Target, Total MTD Disbursement, Total Shortfall
+# Display MTD Target Summary Card - SECOND ROW: Total MTD Target, Total MTD Disbursement, Total Shortfall
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
                 border-radius: 24px; 
                 padding: 2.5rem; 
-                margin-bottom: 3rem;
+                margin-bottom: 1.5rem;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                 border: 2px solid rgba(255, 255, 255, 0.1);">
         <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
@@ -743,6 +771,48 @@ st.markdown(f"""
                 </div>
                 <div style="font-size: 3rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'}; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);">
                     {format_total(abs(mtd_shortfall))}
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Display PMTD Comparison Card - THIRD ROW: Total PMTD Disbursement, Total MTD Disbursement, MoM Growth
+st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                border-radius: 24px; 
+                padding: 2.5rem; 
+                margin-bottom: 3rem;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.1);">
+        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL PMTD DISBURSEMENT
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: #8b5cf6; text-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);">
+                    {format_total(total_pmtd_disbursement)}
+                </div>
+            </div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL MTD DISBURSEMENT
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
+                    {format_total(total_disbursement)}
+                </div>
+            </div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    MOM GROWTH
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: {'#10b981' if mom_growth >= 0 else '#ef4444'}; text-shadow: 0 2px 10px rgba({'16, 185, 129' if mom_growth >= 0 else '239, 68, 68'}, 0.3);">
+                    {format_total(abs(mom_growth))}
+                </div>
+                <div style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.5rem;">
+                    {'↑' if mom_growth >= 0 else '↓'} {abs(mom_growth_percentage):.1f}%
                 </div>
             </div>
         </div>
