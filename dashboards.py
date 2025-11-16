@@ -679,7 +679,7 @@ st.markdown(f"""
                 margin-bottom: 1.5rem;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                 border: 2px solid rgba(255, 255, 255, 0.1);">
-        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
             <div style="text-align: center;">
                 <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL MTD DISBURSEMENT
@@ -718,7 +718,7 @@ st.markdown(f"""
                 margin-bottom: 3rem;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                 border: 2px solid rgba(255, 255, 255, 0.1);">
-        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
             <div style="text-align: center;">
                 <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL MTD DISBURSEMENT
