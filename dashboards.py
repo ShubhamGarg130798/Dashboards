@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 
 # Set page configuration
 st.set_page_config(
@@ -48,7 +49,30 @@ st.markdown("""
     .header-section {
         margin-bottom: 3rem;
         padding-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .header-left {
+        flex: 1;
         text-align: center;
+    }
+    
+    .header-right {
+        position: absolute;
+        right: 3rem;
+        top: 2rem;
+    }
+    
+    .current-date {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
     }
     
     .main-title {
@@ -198,6 +222,17 @@ st.markdown("""
     
     /* Responsive */
     @media (max-width: 768px) {
+        .header-section {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .header-right {
+            position: relative;
+            right: auto;
+            top: auto;
+        }
+        
         .brand-card {
             padding: 1.5rem;
             min-height: 140px;
@@ -215,11 +250,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# Get current date
+current_date = datetime.now().strftime("%d %B %Y")
+
 # Header
-st.markdown("""
+st.markdown(f"""
     <div class="header-section">
-        <div class="main-title">Brand Dashboards Portal</div>
-        <div class="title-underline"></div>
+        <div class="header-left">
+            <div class="main-title">Brand Dashboards Portal</div>
+            <div class="title-underline"></div>
+        </div>
+        <div class="header-right">
+            <div class="current-date">📅 {current_date}</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
