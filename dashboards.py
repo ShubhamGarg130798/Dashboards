@@ -279,7 +279,7 @@ st.markdown("""
     /* Individual Brand Card */
     .brand-card {
         border-radius: 16px;
-        padding: 1.25rem;
+        padding: 1.25rem 1.25rem 1rem 1.25rem;
         position: relative;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -388,8 +388,9 @@ st.markdown("""
         padding: 0.4rem 0.75rem;
         border-radius: 8px;
         display: inline-block;
-        margin-top: 0.3rem;
+        margin-top: 0.25rem;
         margin-right: 0.4rem;
+        margin-bottom: 0.25rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
