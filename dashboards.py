@@ -370,14 +370,14 @@ st.markdown("""
         font-size: 0.9rem;
         color: rgba(255, 255, 255, 0.95);
         font-weight: 600;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.3rem;
     }
     
     .card-target {
         font-size: 0.85rem;
         color: rgba(255, 255, 255, 0.85);
         font-weight: 500;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.35rem;
     }
     
     .card-metric {
@@ -388,9 +388,9 @@ st.markdown("""
         padding: 0.4rem 0.75rem;
         border-radius: 8px;
         display: inline-block;
-        margin-top: 0.25rem;
+        margin-top: 0.35rem;
         margin-right: 0.4rem;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.35rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
@@ -676,34 +676,34 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
                 border-radius: 20px; 
-                padding: 1.75rem; 
-                margin-bottom: 1.5rem;
+                padding: 2rem; 
+                margin-bottom: 1rem;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                 border: 2px solid rgba(255, 255, 255, 0.1);">
-        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem;">
             <div style="text-align: center;">
-                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.4rem;">
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL MTD DISBURSEMENT
                 </div>
-                <div style="font-size: 2.5rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
+                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
                     {format_total(total_disbursement)}
                 </div>
             </div>
-            <div style="width: 2px; height: 60px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
             <div style="text-align: center;">
-                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.4rem;">
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL TARGET
                 </div>
-                <div style="font-size: 2.5rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
+                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
                     ₹{total_target} Cr
                 </div>
             </div>
-            <div style="width: 2px; height: 60px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
             <div style="text-align: center;">
-                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.4rem;">
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     ACHIEVEMENT
                 </div>
-                <div style="font-size: 2.5rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'}; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
+                <div style="font-size: 3rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'}; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
                     {(total_disbursement / (total_target * 10000000) * 100):.1f}%
                 </div>
             </div>
@@ -714,14 +714,14 @@ st.markdown(f"""
 # Display MTD Target Summary Card
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-                border-radius: 24px; 
-                padding: 2.5rem; 
+                border-radius: 20px; 
+                padding: 2rem; 
                 margin-bottom: 3rem;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                 border: 2px solid rgba(255, 255, 255, 0.1);">
         <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem;">
             <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL MTD DISBURSEMENT
                 </div>
                 <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
@@ -730,7 +730,7 @@ st.markdown(f"""
             </div>
             <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
             <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL MTD TARGET
                 </div>
                 <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
@@ -739,7 +739,7 @@ st.markdown(f"""
             </div>
             <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
             <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
                     TOTAL SHORTFALL
                 </div>
                 <div style="font-size: 3rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'}; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);">
