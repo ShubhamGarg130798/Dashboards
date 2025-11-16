@@ -124,7 +124,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 240px;
+        height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -216,19 +216,6 @@ st.markdown("""
         font-size: 1rem;
         color: rgba(255, 255, 255, 0.85);
         font-weight: 500;
-        margin-bottom: 0.3rem;
-    }
-    
-    .card-metric {
-        font-size: 1.15rem;
-        color: rgba(255, 255, 255, 1);
-        font-weight: 800;
-        background: rgba(255, 255, 255, 0.25);
-        padding: 0.5rem 1rem;
-        border-radius: 10px;
-        display: inline-block;
-        margin-top: 0.4rem;
-        border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
     /* Link styling */
@@ -263,7 +250,7 @@ st.markdown("""
         
         .brand-card {
             padding: 1.5rem;
-            min-height: 180px;
+            min-height: 140px;
         }
         .card-brand-name {
             font-size: 1.5rem;
@@ -299,18 +286,14 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Define brand dashboards with colors and Metabase card IDs
-# Sorted by target in decreasing order
+# Define brand dashboards with colors
 brand_dashboards = [
     {
-        "name": "FundoBaBa",
-        "url": "https://tinyurl.com/5n9abwcx",
-        "icon": "💼",
-        "description": "Mumbai Team",
-        "target": "₹25 Cr",
-        "target_value": 25,
-        "metabase_card_id": None,  # Disabled for now due to slow loading
-        "metric_label": "Total Disb",
+        "name": "Duniya",
+        "url": "https://tinyurl.com/nhzvpuy6",
+        "icon": "🌍",
+        "description": "Harsh",
+        "target": "₹15 Cr",
         "color": "blue"
     },
     {
@@ -319,109 +302,7 @@ brand_dashboards = [
         "icon": "⚡",
         "description": "Ashutosh",
         "target": "₹18 Cr",
-        "target_value": 18,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
         "color": "green"
-    },
-    {
-        "name": "SnapPaisa",
-        "url": "https://tinyurl.com/2p9mdevt",
-        "icon": "📸",
-        "description": "Mumbai Team",
-        "target": "₹18 Cr",
-        "target_value": 18,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "purple"
-    },
-    {
-        "name": "Duniya",
-        "url": "https://tinyurl.com/nhzvpuy6",
-        "icon": "🌍",
-        "description": "Harsh",
-        "target": "₹15 Cr",
-        "target_value": 15,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "blue"
-    },
-    {
-        "name": "Tejas",
-        "url": "https://tinyurl.com/29sb8js4",
-        "icon": "✨",
-        "description": "Nitin",
-        "target": "₹15 Cr",
-        "target_value": 15,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "red"
-    },
-    {
-        "name": "Salary 4 Sure",
-        "url": "https://tinyurl.com/bdfdufas",
-        "icon": "💸",
-        "description": "Vivek & Pranit",
-        "target": "₹15 Cr",
-        "target_value": 15,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "orange"
-    },
-    {
-        "name": "Salary Setu",
-        "url": "https://tinyurl.com/2we6eyvf",
-        "icon": "💵",
-        "description": "Prajwal",
-        "target": "₹11 Cr",
-        "target_value": 11,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "green"
-    },
-    {
-        "name": "Salary Adda",
-        "url": "https://tinyurl.com/4cd79c5b",
-        "icon": "💳",
-        "description": "Asim",
-        "target": "₹10 Cr",
-        "target_value": 10,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "teal"
-    },
-    {
-        "name": "Zepto Finance",
-        "url": "https://tinyurl.com/44cj83rw",
-        "icon": "⚡",
-        "description": "Arvind Jaiswal",
-        "target": "₹9 Cr",
-        "target_value": 9,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "pink"
-    },
-    {
-        "name": "Paisa on Salary",
-        "url": "https://tinyurl.com/fpxzjfsk",
-        "icon": "💰",
-        "description": "Ajay",
-        "target": "₹5 Cr",
-        "target_value": 5,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "teal"
-    },
-    {
-        "name": "Squid Loan",
-        "url": "https://tinyurl.com/mphk5xpc",
-        "icon": "🦑",
-        "description": "Shashikant",
-        "target": "₹5 Cr",
-        "target_value": 5,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "indigo"
     },
     {
         "name": "Jhatpat",
@@ -429,10 +310,79 @@ brand_dashboards = [
         "icon": "🚀",
         "description": "Vivek",
         "target": "₹3 Cr",
-        "target_value": 3,
-        "metabase_card_id": None,
-        "metric_label": "MTD Disb",
         "color": "orange"
+    },
+    {
+        "name": "Paisa on Salary",
+        "url": "https://tinyurl.com/fpxzjfsk",
+        "icon": "💰",
+        "description": "Ajay",
+        "target": "₹5 Cr",
+        "color": "teal"
+    },
+    {
+        "name": "SnapPaisa",
+        "url": "https://tinyurl.com/2p9mdevt",
+        "icon": "📸",
+        "description": "Mumbai Team",
+        "target": "₹18 Cr",
+        "color": "purple"
+    },
+    {
+        "name": "Squid Loan",
+        "url": "https://tinyurl.com/mphk5xpc",
+        "icon": "🦑",
+        "description": "Shashikant",
+        "target": "₹5 Cr",
+        "color": "indigo"
+    },
+    {
+        "name": "Tejas",
+        "url": "https://tinyurl.com/29sb8js4",
+        "icon": "✨",
+        "description": "Nitin",
+        "target": "₹15 Cr",
+        "color": "red"
+    },
+    {
+        "name": "Zepto Finance",
+        "url": "https://tinyurl.com/44cj83rw",
+        "icon": "⚡",
+        "description": "Arvind Jaiswal",
+        "target": "₹9 Cr",
+        "color": "pink"
+    },
+    {
+        "name": "FundoBaBa",
+        "url": "https://tinyurl.com/5n9abwcx",
+        "icon": "💼",
+        "description": "Mumbai Team",
+        "target": "₹25 Cr",
+        "color": "blue"
+    },
+    {
+        "name": "Salary Setu",
+        "url": "https://tinyurl.com/2we6eyvf",
+        "icon": "💵",
+        "description": "Prajwal",
+        "target": "₹11 Cr",
+        "color": "green"
+    },
+    {
+        "name": "Salary 4 Sure",
+        "url": "https://tinyurl.com/bdfdufas",
+        "icon": "💸",
+        "description": "Vivek & Pranit",
+        "target": "₹15 Cr",
+        "color": "orange"
+    },
+    {
+        "name": "Salary Adda",
+        "url": "https://tinyurl.com/4cd79c5b",
+        "icon": "💳",
+        "description": "Asim",
+        "target": "₹10 Cr",
+        "color": "teal"
     }
 ]
 
@@ -443,8 +393,6 @@ for i in range(0, len(brand_dashboards), 4):
     for j in range(4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
-            metric_value = "Coming Soon"
-            
             with cols[j]:
                 st.markdown(f"""
                     <a href="{brand['url']}" target="_blank">
@@ -456,7 +404,6 @@ for i in range(0, len(brand_dashboards), 4):
                             <div>
                                 <div class="card-description">👤 {brand['description']}</div>
                                 <div class="card-target">🎯 Target: {brand['target']}</div>
-                                <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
                             </div>
                         </div>
                     </a>
