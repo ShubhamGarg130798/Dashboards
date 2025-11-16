@@ -85,7 +85,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 180px;
+        height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -167,10 +167,16 @@ st.markdown("""
     }
     
     .card-description {
-        font-size: 1.35rem;
+        font-size: 1.1rem;
         color: rgba(255, 255, 255, 0.95);
         font-weight: 600;
-        font-style: italic;
+        margin-bottom: 0.3rem;
+    }
+    
+    .card-target {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 500;
     }
     
     /* Link styling */
@@ -194,7 +200,7 @@ st.markdown("""
     @media (max-width: 768px) {
         .brand-card {
             padding: 1.5rem;
-            min-height: 120px;
+            min-height: 140px;
         }
         .card-brand-name {
             font-size: 1.5rem;
@@ -224,6 +230,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
         "description": "Harsh",
+        "target": "₹50L",
         "color": "blue"
     },
     {
@@ -231,6 +238,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/59dtjd88",
         "icon": "⚡",
         "description": "Ashutosh",
+        "target": "₹75L",
         "color": "green"
     },
     {
@@ -238,6 +246,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/294bc6ns",
         "icon": "🚀",
         "description": "Vivek",
+        "target": "₹60L",
         "color": "orange"
     },
     {
@@ -245,6 +254,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/fpxzjfsk",
         "icon": "💰",
         "description": "Ajay",
+        "target": "₹80L",
         "color": "teal"
     },
     {
@@ -252,6 +262,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/2p9mdevt",
         "icon": "📸",
         "description": "Mumbai Team",
+        "target": "₹1Cr",
         "color": "purple"
     },
     {
@@ -259,6 +270,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/mphk5xpc",
         "icon": "🦑",
         "description": "Shashikant",
+        "target": "₹90L",
         "color": "indigo"
     },
     {
@@ -266,6 +278,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/29sb8js4",
         "icon": "✨",
         "description": "Nitin",
+        "target": "₹70L",
         "color": "red"
     },
     {
@@ -273,6 +286,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/44cj83rw",
         "icon": "⚡",
         "description": "Arvind Jaiswal",
+        "target": "₹1.2Cr",
         "color": "pink"
     },
     {
@@ -280,6 +294,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/5n9abwcx",
         "icon": "💼",
         "description": "Mumbai Team",
+        "target": "₹85L",
         "color": "blue"
     },
     {
@@ -287,6 +302,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/2we6eyvf",
         "icon": "💵",
         "description": "Prajwal",
+        "target": "₹95L",
         "color": "green"
     },
     {
@@ -294,6 +310,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/bdfdufas",
         "icon": "💸",
         "description": "Vivek & Pranit",
+        "target": "₹1.5Cr",
         "color": "orange"
     },
     {
@@ -301,6 +318,7 @@ brand_dashboards = [
         "url": "https://tinyurl.com/4cd79c5b",
         "icon": "💳",
         "description": "Asim",
+        "target": "₹65L",
         "color": "teal"
     }
 ]
@@ -321,7 +339,8 @@ for i in range(0, len(brand_dashboards), 4):
                                 <div class="card-icon">{brand['icon']}</div>
                             </div>
                             <div>
-                                <div class="card-description">{brand['description']}</div>
+                                <div class="card-description">👤 {brand['description']}</div>
+                                <div class="card-target">🎯 Target: {brand['target']}</div>
                             </div>
                         </div>
                     </a>
