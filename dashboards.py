@@ -1,8 +1,6 @@
 import streamlit as st
 from datetime import datetime
 import calendar
-import requests
-import time
 
 # Set page configuration
 st.set_page_config(
@@ -11,91 +9,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-# Metabase Configuration
-METABASE_URL = "http://43.205.95.106:3000"
-METABASE_USERNAME = "shubham.garg@fintechcloud.in"
-METABASE_PASSWORD = "Qwerty@12345"
-
-# Function to get Metabase session token
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def get_metabase_token():
-    """Get authentication token from Metabase"""
-    try:
-        response = requests.post(
-            f"{METABASE_URL}/api/session",
-            json={
-                "username": METABASE_USERNAME,
-                "password": METABASE_PASSWORD
-            },
-            timeout=10
-        )
-        if response.status_code == 200:
-            token = response.json()['id']
-            return token
-        else:
-            return None
-    except Exception as e:
-        return None
-
-# Function to fetch data from Metabase question/card
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_metabase_metric(card_id, token):
-    """
-    Fetch data from a Metabase question/card
-    card_id: The ID of the Metabase question
-    """
-    if not token:
-        return "N/A"
-    
-    try:
-        headers = {
-            "X-Metabase-Session": token,
-            "Content-Type": "application/json"
-        }
-        
-        # First attempt to get the data
-        response = requests.post(
-            f"{METABASE_URL}/api/card/{card_id}/query",
-            headers=headers,
-            timeout=20
-        )
-        
-        # Handle 202 (Async processing) - retry up to 3 times
-        retry_count = 0
-        while response.status_code == 202 and retry_count < 3:
-            time.sleep(2)
-            retry_count += 1
-            response = requests.post(
-                f"{METABASE_URL}/api/card/{card_id}/query",
-                headers=headers,
-                timeout=20
-            )
-        
-        if response.status_code == 200:
-            data = response.json()
-            
-            # Extract the first row, first column value
-            if 'data' in data and 'rows' in data['data'] and len(data['data']['rows']) > 0:
-                value = data['data']['rows'][0][0]
-                
-                # Format the value if it's a number
-                if isinstance(value, (int, float)):
-                    # Convert to Crores/Lakhs format
-                    if value >= 10000000:  # 1 Crore
-                        return f"₹{value/10000000:.2f} Cr"
-                    elif value >= 100000:  # 1 Lakh
-                        return f"₹{value/100000:.2f} L"
-                    else:
-                        return f"₹{value:,.0f}"
-                return str(value)
-            else:
-                return "No Data"
-        else:
-            return "Loading..."
-            
-    except Exception as e:
-        return "N/A"
 
 # Custom CSS for KPI card style
 st.markdown("""
@@ -386,9 +299,6 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Get Metabase token
-metabase_token = get_metabase_token()
-
 # Define brand dashboards with colors and Metabase card IDs
 # Sorted by target in decreasing order
 brand_dashboards = [
@@ -399,7 +309,7 @@ brand_dashboards = [
         "description": "Mumbai Team",
         "target": "₹25 Cr",
         "target_value": 25,
-        "metabase_card_id": 432,
+        "metabase_card_id": None,  # Disabled for now due to slow loading
         "metric_label": "Total Disb",
         "color": "blue"
     },
@@ -533,12 +443,7 @@ for i in range(0, len(brand_dashboards), 4):
     for j in range(4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
-            
-            # Fetch metric from Metabase if card_id is provided
-            if brand['metabase_card_id']:
-                metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
-            else:
-                metric_value = "Coming Soon"
+            metric_value = "Coming Soon"
             
             with cols[j]:
                 st.markdown(f"""
