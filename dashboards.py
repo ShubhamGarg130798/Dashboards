@@ -699,127 +699,98 @@ def calculate_mtd_target(current_day, total_target_cr):
 mtd_target_amount = calculate_mtd_target(current_day, total_target)
 mtd_shortfall = mtd_target_amount - total_disbursement
 
-# Display summary card - FIRST ROW: Total Target, Total MTD Disbursement, Achievement
-st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-                border-radius: 24px; 
-                padding: 2.5rem; 
-                margin-bottom: 1.5rem;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-                border: 2px solid rgba(255, 255, 255, 0.1);">
-        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL TARGET
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
-                    ₹{total_target} Cr
-                </div>
-            </div>
-            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD DISBURSEMENT
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
-                    {format_total(total_disbursement)}
-                </div>
-            </div>
-            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    ACHIEVEMENT
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'}; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
-                    {(total_disbursement / (total_target * 10000000) * 100):.1f}%
-                </div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Display MTD Target Summary Card - SECOND ROW: Total MTD Target, Total MTD Disbursement, Total Shortfall
+# Calculate percentages
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
+# Display compact summary cards in single row
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-                border-radius: 24px; 
-                padding: 2.5rem; 
-                margin-bottom: 1.5rem;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-                border: 2px solid rgba(255, 255, 255, 0.1);">
-        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD TARGET
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
-                    {format_total(mtd_target_amount)}
-                </div>
-            </div>
-            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD DISBURSEMENT
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
-                    {format_total(total_disbursement)}
-                </div>
-            </div>
-            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL SHORTFALL
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'}; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);">
-                    {format_total(abs(mtd_shortfall))}
-                </div>
-                <div style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.5rem;">
-                    {'↓' if mtd_shortfall > 0 else '↑'} {shortfall_percentage:.1f}%
-                </div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Display PMTD Comparison Card - THIRD ROW: Total PMTD Disbursement, Total MTD Disbursement, MoM Growth
-st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-                border-radius: 24px; 
-                padding: 2.5rem; 
+                border-radius: 20px; 
+                padding: 2rem; 
                 margin-bottom: 3rem;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
                 border: 2px solid rgba(255, 255, 255, 0.1);">
-        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL PMTD DISBURSEMENT
+        <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: stretch; gap: 2rem;">
+            
+            <!-- Monthly Goal Status Card -->
+            <div style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1rem;">
+                    🌍 Monthly Goal Status
                 </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #8b5cf6; text-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);">
-                    {format_total(total_pmtd_disbursement)}
-                </div>
-            </div>
-            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD DISBURSEMENT
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
-                    {format_total(total_disbursement)}
-                </div>
-            </div>
-            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
-            <div style="text-align: center;">
-                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    MOM GROWTH
-                </div>
-                <div style="font-size: 3rem; font-weight: 900; color: {'#10b981' if mom_growth >= 0 else '#ef4444'}; text-shadow: 0 2px 10px rgba({'16, 185, 129' if mom_growth >= 0 else '239, 68, 68'}, 0.3);">
-                    {format_total(abs(mom_growth))}
-                </div>
-                <div style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.5rem;">
-                    {'↑' if mom_growth >= 0 else '↓'} {abs(mom_growth_percentage):.1f}%
+                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total Target</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #3b82f6;">₹{total_target} Cr</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Disbursement</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Achievement</div>
+                        <div style="font-size: 2rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'};">
+                            {(total_disbursement / (total_target * 10000000) * 100):.1f}%
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+            <div style="width: 2px; background: rgba(255, 255, 255, 0.2);"></div>
+            
+            <!-- Monthly Shortfall Card -->
+            <div style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1rem;">
+                    📈 Monthly Shortfall
+                </div>
+                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Target</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #3b82f6;">{format_total(mtd_target_amount)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Disbursement</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total Shortfall</div>
+                        <div style="font-size: 2rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'};">
+                            {format_total(abs(mtd_shortfall))}
+                        </div>
+                        <div style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.3rem;">
+                            {'↓' if mtd_shortfall > 0 else '↑'} {shortfall_percentage:.1f}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="width: 2px; background: rgba(255, 255, 255, 0.2);"></div>
+            
+            <!-- MoM Growth Card -->
+            <div style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1rem;">
+                    🏆 MoM Growth
+                </div>
+                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total PMTD Disbursement</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #8b5cf6;">{format_total(total_pmtd_disbursement)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Disbursement</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">MoM Growth</div>
+                        <div style="font-size: 2rem; font-weight: 900; color: {'#10b981' if mom_growth >= 0 else '#ef4444'};">
+                            {format_total(abs(mom_growth))}
+                        </div>
+                        <div style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.3rem;">
+                            {'↑' if mom_growth >= 0 else '↓'} {abs(mom_growth_percentage):.1f}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
     """, unsafe_allow_html=True)
