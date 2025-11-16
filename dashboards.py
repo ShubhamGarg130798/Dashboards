@@ -441,6 +441,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Get current date and calculate days left in month
+# Force fresh calculation every time - don't cache this
 now = datetime.now()
 current_date = now.strftime("%d %B %Y")
 current_day = now.day
