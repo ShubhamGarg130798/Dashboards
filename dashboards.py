@@ -34,10 +34,8 @@ def get_metabase_token():
             token = response.json()['id']
             return token
         else:
-            st.error(f"❌ Metabase authentication failed: {response.status_code}")
             return None
     except Exception as e:
-        st.error(f"❌ Error connecting to Metabase: {e}")
         return None
 
 # Function to fetch data from Metabase question/card
@@ -60,17 +58,18 @@ def fetch_metabase_metric(card_id, token):
         response = requests.post(
             f"{METABASE_URL}/api/card/{card_id}/query",
             headers=headers,
-            timeout=15
+            timeout=20
         )
         
-        # Handle 202 (Async processing)
-        if response.status_code == 202:
-            # Query is being processed, wait and retry
+        # Handle 202 (Async processing) - retry up to 3 times
+        retry_count = 0
+        while response.status_code == 202 and retry_count < 3:
             time.sleep(2)
+            retry_count += 1
             response = requests.post(
                 f"{METABASE_URL}/api/card/{card_id}/query",
                 headers=headers,
-                timeout=15
+                timeout=20
             )
         
         if response.status_code == 200:
@@ -93,64 +92,7 @@ def fetch_metabase_metric(card_id, token):
             else:
                 return "No Data"
         else:
-            return f"Error {response.status_code}"
-            
-    except Exception as e:
-        return "Error"
-
-# Alternative function using dataset endpoint
-@st.cache_data(ttl=300)
-def fetch_metabase_dataset(card_id, token):
-    """
-    Alternative method: Fetch using dataset endpoint
-    """
-    if not token:
-        return "N/A"
-    
-    try:
-        headers = {
-            "X-Metabase-Session": token,
-            "Content-Type": "application/json"
-        }
-        
-        # Get card details first
-        card_response = requests.get(
-            f"{METABASE_URL}/api/card/{card_id}",
-            headers=headers,
-            timeout=10
-        )
-        
-        if card_response.status_code == 200:
-            card_data = card_response.json()
-            
-            # Execute query using dataset endpoint
-            query_response = requests.post(
-                f"{METABASE_URL}/api/dataset",
-                headers=headers,
-                json={
-                    "database": card_data.get("database_id"),
-                    "type": "query",
-                    "query": card_data.get("dataset_query", {}).get("query", {})
-                },
-                timeout=20
-            )
-            
-            if query_response.status_code == 200:
-                data = query_response.json()
-                
-                if 'data' in data and 'rows' in data['data'] and len(data['data']['rows']) > 0:
-                    value = data['data']['rows'][0][0]
-                    
-                    if isinstance(value, (int, float)):
-                        if value >= 10000000:
-                            return f"₹{value/10000000:.2f} Cr"
-                        elif value >= 100000:
-                            return f"₹{value/100000:.2f} L"
-                        else:
-                            return f"₹{value:,.0f}"
-                    return str(value)
-        
-        return "N/A"
+            return "Loading..."
             
     except Exception as e:
         return "N/A"
@@ -535,8 +477,8 @@ brand_dashboards = [
         "icon": "💼",
         "description": "Mumbai Team",
         "target": "₹25 Cr",
-        "metabase_card_id": 270,
-        "metric_label": "Written Off",
+        "metabase_card_id": 432,  # Total Disbursement Card
+        "metric_label": "Total Disb",
         "color": "blue"
     },
     {
@@ -581,11 +523,7 @@ for i in range(0, len(brand_dashboards), 4):
             
             # Fetch metric from Metabase if card_id is provided
             if brand['metabase_card_id']:
-                # Try dataset endpoint first
-                metric_value = fetch_metabase_dataset(brand['metabase_card_id'], metabase_token)
-                if metric_value == "N/A":
-                    # Fallback to regular query endpoint
-                    metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
+                metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
             else:
                 metric_value = "Coming Soon"
             
