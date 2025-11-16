@@ -1,6 +1,8 @@
 import streamlit as st
 from datetime import datetime
 import calendar
+import requests
+import time
 
 # Set page configuration
 st.set_page_config(
@@ -9,6 +11,124 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Metabase Configuration
+METABASE_URL = "http://43.205.95.106:3000"
+METABASE_USERNAME = "shubham.garg@fintechcloud.in"
+METABASE_PASSWORD = "Qwerty@12345"
+
+# Function to get Metabase session token
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def get_metabase_token():
+    """Get authentication token from Metabase"""
+    try:
+        response = requests.post(
+            f"{METABASE_URL}/api/session",
+            json={
+                "username": METABASE_USERNAME,
+                "password": METABASE_PASSWORD
+            },
+            timeout=10
+        )
+        if response.status_code == 200:
+            token = response.json()['id']
+            return token
+        else:
+            st.error(f"❌ Metabase authentication failed: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"❌ Error connecting to Metabase: {e}")
+        return None
+
+# Function to fetch data from Metabase question/card with improved handling
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def fetch_metabase_metric(card_id, token):
+    """
+    Fetch data from a Metabase question/card
+    card_id: The ID of the Metabase question
+    """
+    if not token:
+        return "Auth Error"
+    
+    try:
+        headers = {
+            "X-Metabase-Session": token,
+            "Content-Type": "application/json"
+        }
+        
+        # Make the request
+        response = requests.post(
+            f"{METABASE_URL}/api/card/{card_id}/query",
+            headers=headers,
+            timeout=30  # Increased timeout
+        )
+        
+        # If we get 202, the query is processing asynchronously
+        if response.status_code == 202:
+            # Wait and retry a few times
+            max_retries = 5
+            for retry in range(max_retries):
+                time.sleep(3)  # Wait 3 seconds
+                response = requests.post(
+                    f"{METABASE_URL}/api/card/{card_id}/query",
+                    headers=headers,
+                    timeout=30
+                )
+                if response.status_code == 200:
+                    break
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Debug: Print the structure to understand the response
+            # st.write(f"Debug - Card {card_id} response:", data)
+            
+            # Try different possible data structures
+            if 'data' in data and 'rows' in data['data']:
+                rows = data['data']['rows']
+                if len(rows) > 0 and len(rows[0]) > 0:
+                    value = rows[0][0]
+                    
+                    # Handle None/NULL values
+                    if value is None:
+                        return "₹0.00"
+                    
+                    # Format the value if it's a number
+                    if isinstance(value, (int, float)):
+                        # Convert to Crores/Lakhs format
+                        if value >= 10000000:  # 1 Crore
+                            return f"₹{value/10000000:.2f} Cr"
+                        elif value >= 100000:  # 1 Lakh
+                            return f"₹{value/100000:.2f} L"
+                        else:
+                            return f"₹{value:,.0f}"
+                    return str(value)
+                else:
+                    return "₹0.00"
+            # Alternative structure
+            elif 'rows' in data:
+                rows = data['rows']
+                if len(rows) > 0 and len(rows[0]) > 0:
+                    value = rows[0][0]
+                    if value is None:
+                        return "₹0.00"
+                    if isinstance(value, (int, float)):
+                        if value >= 10000000:
+                            return f"₹{value/10000000:.2f} Cr"
+                        elif value >= 100000:
+                            return f"₹{value/100000:.2f} L"
+                        else:
+                            return f"₹{value:,.0f}"
+                    return str(value)
+            
+            return "No Data"
+        else:
+            st.warning(f"Card {card_id} returned status: {response.status_code}")
+            return f"Error {response.status_code}"
+            
+    except Exception as e:
+        st.error(f"Error fetching card {card_id}: {str(e)}")
+        return "Error"
 
 # Custom CSS for KPI card style
 st.markdown("""
@@ -124,7 +244,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 200px;
+        height: 240px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -216,6 +336,19 @@ st.markdown("""
         font-size: 1rem;
         color: rgba(255, 255, 255, 0.85);
         font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    
+    .card-metric {
+        font-size: 1.15rem;
+        color: rgba(255, 255, 255, 1);
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        display: inline-block;
+        margin-top: 0.4rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
     /* Link styling */
@@ -250,7 +383,7 @@ st.markdown("""
         
         .brand-card {
             padding: 1.5rem;
-            min-height: 140px;
+            min-height: 180px;
         }
         .card-brand-name {
             font-size: 1.5rem;
@@ -286,14 +419,21 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Define brand dashboards with colors
+# Get Metabase token
+metabase_token = get_metabase_token()
+
+# Define brand dashboards with colors and Metabase card IDs
+# Sorted by target in decreasing order
 brand_dashboards = [
     {
-        "name": "Duniya",
-        "url": "https://tinyurl.com/nhzvpuy6",
-        "icon": "🌍",
-        "description": "Harsh",
-        "target": "₹15 Cr",
+        "name": "FundoBaBa",
+        "url": "https://tinyurl.com/5n9abwcx",
+        "icon": "💼",
+        "description": "Mumbai Team",
+        "target": "₹25 Cr",
+        "target_value": 25,
+        "metabase_card_id": 432,  # Testing with card 432
+        "metric_label": "MTD Disb",
         "color": "blue"
     },
     {
@@ -302,23 +442,10 @@ brand_dashboards = [
         "icon": "⚡",
         "description": "Ashutosh",
         "target": "₹18 Cr",
+        "target_value": 18,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
         "color": "green"
-    },
-    {
-        "name": "Jhatpat",
-        "url": "https://tinyurl.com/294bc6ns",
-        "icon": "🚀",
-        "description": "Vivek",
-        "target": "₹3 Cr",
-        "color": "orange"
-    },
-    {
-        "name": "Paisa on Salary",
-        "url": "https://tinyurl.com/fpxzjfsk",
-        "icon": "💰",
-        "description": "Ajay",
-        "target": "₹5 Cr",
-        "color": "teal"
     },
     {
         "name": "SnapPaisa",
@@ -326,15 +453,21 @@ brand_dashboards = [
         "icon": "📸",
         "description": "Mumbai Team",
         "target": "₹18 Cr",
+        "target_value": 18,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
         "color": "purple"
     },
     {
-        "name": "Squid Loan",
-        "url": "https://tinyurl.com/mphk5xpc",
-        "icon": "🦑",
-        "description": "Shashikant",
-        "target": "₹5 Cr",
-        "color": "indigo"
+        "name": "Duniya",
+        "url": "https://tinyurl.com/nhzvpuy6",
+        "icon": "🌍",
+        "description": "Harsh",
+        "target": "₹15 Cr",
+        "target_value": 15,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "blue"
     },
     {
         "name": "Tejas",
@@ -342,31 +475,10 @@ brand_dashboards = [
         "icon": "✨",
         "description": "Nitin",
         "target": "₹15 Cr",
+        "target_value": 15,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
         "color": "red"
-    },
-    {
-        "name": "Zepto Finance",
-        "url": "https://tinyurl.com/44cj83rw",
-        "icon": "⚡",
-        "description": "Arvind Jaiswal",
-        "target": "₹9 Cr",
-        "color": "pink"
-    },
-    {
-        "name": "FundoBaBa",
-        "url": "https://tinyurl.com/5n9abwcx",
-        "icon": "💼",
-        "description": "Mumbai Team",
-        "target": "₹25 Cr",
-        "color": "blue"
-    },
-    {
-        "name": "Salary Setu",
-        "url": "https://tinyurl.com/2we6eyvf",
-        "icon": "💵",
-        "description": "Prajwal",
-        "target": "₹11 Cr",
-        "color": "green"
     },
     {
         "name": "Salary 4 Sure",
@@ -374,7 +486,21 @@ brand_dashboards = [
         "icon": "💸",
         "description": "Vivek & Pranit",
         "target": "₹15 Cr",
+        "target_value": 15,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
         "color": "orange"
+    },
+    {
+        "name": "Salary Setu",
+        "url": "https://tinyurl.com/2we6eyvf",
+        "icon": "💵",
+        "description": "Prajwal",
+        "target": "₹11 Cr",
+        "target_value": 11,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "green"
     },
     {
         "name": "Salary Adda",
@@ -382,7 +508,54 @@ brand_dashboards = [
         "icon": "💳",
         "description": "Asim",
         "target": "₹10 Cr",
+        "target_value": 10,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
         "color": "teal"
+    },
+    {
+        "name": "Zepto Finance",
+        "url": "https://tinyurl.com/44cj83rw",
+        "icon": "⚡",
+        "description": "Arvind Jaiswal",
+        "target": "₹9 Cr",
+        "target_value": 9,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "pink"
+    },
+    {
+        "name": "Paisa on Salary",
+        "url": "https://tinyurl.com/fpxzjfsk",
+        "icon": "💰",
+        "description": "Ajay",
+        "target": "₹5 Cr",
+        "target_value": 5,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "teal"
+    },
+    {
+        "name": "Squid Loan",
+        "url": "https://tinyurl.com/mphk5xpc",
+        "icon": "🦑",
+        "description": "Shashikant",
+        "target": "₹5 Cr",
+        "target_value": 5,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "indigo"
+    },
+    {
+        "name": "Jhatpat",
+        "url": "https://tinyurl.com/294bc6ns",
+        "icon": "🚀",
+        "description": "Vivek",
+        "target": "₹3 Cr",
+        "target_value": 3,
+        "metabase_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "orange"
     }
 ]
 
@@ -393,6 +566,13 @@ for i in range(0, len(brand_dashboards), 4):
     for j in range(4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
+            
+            # Fetch metric from Metabase if card_id is provided
+            if brand['metabase_card_id']:
+                metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
+            else:
+                metric_value = "Coming Soon"
+            
             with cols[j]:
                 st.markdown(f"""
                     <a href="{brand['url']}" target="_blank">
@@ -404,6 +584,7 @@ for i in range(0, len(brand_dashboards), 4):
                             <div>
                                 <div class="card-description">👤 {brand['description']}</div>
                                 <div class="card-target">🎯 Target: {brand['target']}</div>
+                                <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
                             </div>
                         </div>
                     </a>
