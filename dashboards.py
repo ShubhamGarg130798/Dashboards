@@ -34,18 +34,15 @@ def get_metabase_token():
             token = response.json()['id']
             return token
         else:
-            st.error(f"❌ Metabase authentication failed: {response.status_code}")
             return None
     except Exception as e:
-        st.error(f"❌ Error connecting to Metabase: {e}")
         return None
 
-# Function to fetch data from Metabase question/card with improved handling
+# Alternative approach: Use GET instead of POST for saved questions
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_metabase_metric(card_id, token):
+def fetch_metabase_metric_v2(card_id, token):
     """
-    Fetch data from a Metabase question/card
-    card_id: The ID of the Metabase question
+    Alternative method: Fetch using GET request with query result
     """
     if not token:
         return "Auth Error"
@@ -56,78 +53,86 @@ def fetch_metabase_metric(card_id, token):
             "Content-Type": "application/json"
         }
         
-        # Make the request
+        # Try using json/query endpoint with empty parameters
         response = requests.post(
-            f"{METABASE_URL}/api/card/{card_id}/query",
+            f"{METABASE_URL}/api/card/{card_id}/query/json",
             headers=headers,
-            timeout=30  # Increased timeout
+            json={"parameters": []},
+            timeout=45
         )
-        
-        # If we get 202, the query is processing asynchronously
-        if response.status_code == 202:
-            # Wait and retry a few times
-            max_retries = 5
-            for retry in range(max_retries):
-                time.sleep(3)  # Wait 3 seconds
-                response = requests.post(
-                    f"{METABASE_URL}/api/card/{card_id}/query",
-                    headers=headers,
-                    timeout=30
-                )
-                if response.status_code == 200:
-                    break
         
         if response.status_code == 200:
             data = response.json()
             
-            # Debug: Print the structure to understand the response
-            # st.write(f"Debug - Card {card_id} response:", data)
-            
-            # Try different possible data structures
-            if 'data' in data and 'rows' in data['data']:
-                rows = data['data']['rows']
-                if len(rows) > 0 and len(rows[0]) > 0:
-                    value = rows[0][0]
-                    
-                    # Handle None/NULL values
-                    if value is None:
-                        return "₹0.00"
-                    
-                    # Format the value if it's a number
-                    if isinstance(value, (int, float)):
-                        # Convert to Crores/Lakhs format
-                        if value >= 10000000:  # 1 Crore
-                            return f"₹{value/10000000:.2f} Cr"
-                        elif value >= 100000:  # 1 Lakh
-                            return f"₹{value/100000:.2f} L"
-                        else:
-                            return f"₹{value:,.0f}"
-                    return str(value)
+            # The json endpoint returns an array of objects
+            if isinstance(data, list) and len(data) > 0:
+                # Get the first row
+                first_row = data[0]
+                # Get the first value (should be total_disbursed_amount)
+                if isinstance(first_row, dict):
+                    # Get the value from the dict
+                    value = list(first_row.values())[0] if first_row else None
                 else:
+                    value = first_row
+                
+                if value is None:
                     return "₹0.00"
-            # Alternative structure
-            elif 'rows' in data:
-                rows = data['rows']
-                if len(rows) > 0 and len(rows[0]) > 0:
-                    value = rows[0][0]
-                    if value is None:
-                        return "₹0.00"
-                    if isinstance(value, (int, float)):
-                        if value >= 10000000:
-                            return f"₹{value/10000000:.2f} Cr"
-                        elif value >= 100000:
-                            return f"₹{value/100000:.2f} L"
-                        else:
-                            return f"₹{value:,.0f}"
-                    return str(value)
+                
+                # Format the value
+                if isinstance(value, (int, float)):
+                    if value >= 10000000:  # 1 Crore
+                        return f"₹{value/10000000:.2f} Cr"
+                    elif value >= 100000:  # 1 Lakh
+                        return f"₹{value/100000:.2f} L"
+                    else:
+                        return f"₹{value:,.0f}"
+                return str(value)
             
-            return "No Data"
-        else:
-            st.warning(f"Card {card_id} returned status: {response.status_code}")
-            return f"Error {response.status_code}"
+            return "₹0.00"
+        
+        return f"Error {response.status_code}"
             
     except Exception as e:
-        st.error(f"Error fetching card {card_id}: {str(e)}")
+        return "Error"
+
+# Function to fetch data using public link (if available)
+@st.cache_data(ttl=300)
+def fetch_metabase_public(public_uuid):
+    """
+    Fetch from public Metabase link
+    """
+    try:
+        response = requests.get(
+            f"{METABASE_URL}/api/public/card/{public_uuid}/query/json",
+            timeout=45
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            if isinstance(data, list) and len(data) > 0:
+                first_row = data[0]
+                if isinstance(first_row, dict):
+                    value = list(first_row.values())[0] if first_row else None
+                else:
+                    value = first_row
+                
+                if value is None:
+                    return "₹0.00"
+                
+                if isinstance(value, (int, float)):
+                    if value >= 10000000:
+                        return f"₹{value/10000000:.2f} Cr"
+                    elif value >= 100000:
+                        return f"₹{value/100000:.2f} L"
+                    else:
+                        return f"₹{value:,.0f}"
+                return str(value)
+            
+            return "₹0.00"
+        
+        return "Error"
+    except:
         return "Error"
 
 # Custom CSS for KPI card style
@@ -432,7 +437,7 @@ brand_dashboards = [
         "description": "Mumbai Team",
         "target": "₹25 Cr",
         "target_value": 25,
-        "metabase_card_id": 432,  # Testing with card 432
+        "metabase_card_id": 432,
         "metric_label": "MTD Disb",
         "color": "blue"
     },
@@ -569,7 +574,7 @@ for i in range(0, len(brand_dashboards), 4):
             
             # Fetch metric from Metabase if card_id is provided
             if brand['metabase_card_id']:
-                metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
+                metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
             else:
                 metric_value = "Coming Soon"
             
