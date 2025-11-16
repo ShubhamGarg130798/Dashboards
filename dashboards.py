@@ -95,6 +95,35 @@ def fetch_metabase_metric_v2(card_id, token):
     except Exception as e:
         return "Error"
 
+# Function to calculate total from metric values
+def parse_metric_value(value_str):
+    """Parse formatted metric value back to number"""
+    if isinstance(value_str, str):
+        if "Error" in value_str or value_str == "Coming Soon":
+            return 0
+        # Remove currency symbol and spaces
+        value_str = value_str.replace('₹', '').replace(',', '').strip()
+        # Handle Cr and L suffixes
+        if 'Cr' in value_str:
+            return float(value_str.replace('Cr', '').strip()) * 10000000
+        elif 'L' in value_str:
+            return float(value_str.replace('L', '').strip()) * 100000
+        else:
+            try:
+                return float(value_str)
+            except:
+                return 0
+    return 0
+
+def format_total(value):
+    """Format total value"""
+    if value >= 10000000:  # 1 Crore
+        return f"₹{value/10000000:.2f} Cr"
+    elif value >= 100000:  # 1 Lakh
+        return f"₹{value/100000:.2f} L"
+    else:
+        return f"₹{value:,.0f}"
+
 # Custom CSS for KPI card style
 st.markdown("""
     <style>
@@ -524,6 +553,60 @@ brand_dashboards = [
     }
 ]
 
+# Fetch all metrics and calculate total
+total_disbursement = 0
+brand_metrics = {}
+
+for brand in brand_dashboards:
+    if brand['metabase_card_id']:
+        metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
+        brand_metrics[brand['name']] = metric_value
+        total_disbursement += parse_metric_value(metric_value)
+    else:
+        brand_metrics[brand['name']] = "Coming Soon"
+
+# Calculate total target
+total_target = sum([brand['target_value'] for brand in brand_dashboards])
+
+# Display summary card
+st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                border-radius: 24px; 
+                padding: 2.5rem; 
+                margin-bottom: 3rem;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.1);">
+        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL MTD DISBURSEMENT
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
+                    {format_total(total_disbursement)}
+                </div>
+            </div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL TARGET
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
+                    ₹{total_target} Cr
+                </div>
+            </div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    ACHIEVEMENT
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'}; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
+                    {(total_disbursement / (total_target * 10000000) * 100):.1f}%
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # Create brand cards in rows of 4
 for i in range(0, len(brand_dashboards), 4):
     cols = st.columns(4, gap="large")
@@ -532,11 +615,8 @@ for i in range(0, len(brand_dashboards), 4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
             
-            # Fetch metric from Metabase if card_id is provided
-            if brand['metabase_card_id']:
-                metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
-            else:
-                metric_value = "Coming Soon"
+            # Use pre-fetched metric value
+            metric_value = brand_metrics.get(brand['name'], "Coming Soon")
             
             with cols[j]:
                 st.markdown(f"""
