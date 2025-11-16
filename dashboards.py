@@ -12,9 +12,9 @@ st.set_page_config(
 )
 
 # Metabase Configuration
-METABASE_URL = "http://43.205.95.106:3000/"  # Replace with your Metabase URL
-METABASE_USERNAME = "shubham.garg@fintechcloud.in"  # Replace with your username
-METABASE_PASSWORD = "Qwerty@12345"  # Replace with your password
+METABASE_URL = "http://43.205.95.106:3000"  # Removed trailing slash
+METABASE_USERNAME = "shubham.garg@fintechcloud.in"
+METABASE_PASSWORD = "Qwerty@12345"
 
 # Function to get Metabase session token
 @st.cache_data(ttl=3600)  # Cache for 1 hour
@@ -26,11 +26,14 @@ def get_metabase_token():
             json={
                 "username": METABASE_USERNAME,
                 "password": METABASE_PASSWORD
-            }
+            },
+            timeout=10
         )
         if response.status_code == 200:
             return response.json()['id']
-        return None
+        else:
+            st.error(f"Metabase authentication failed: {response.status_code}")
+            return None
     except Exception as e:
         st.error(f"Error connecting to Metabase: {e}")
         return None
@@ -42,40 +45,40 @@ def fetch_metabase_metric(card_id, token):
     Fetch data from a Metabase question/card
     card_id: The ID of the Metabase question
     """
+    if not token:
+        return "N/A"
+    
     try:
         headers = {
-            "X-Metabase-Session": token
+            "X-Metabase-Session": token,
+            "Content-Type": "application/json"
         }
         response = requests.post(
             f"{METABASE_URL}/api/card/{card_id}/query",
-            headers=headers
+            headers=headers,
+            timeout=10
         )
         if response.status_code == 200:
             data = response.json()
             # Extract the first row, first column value (adjust based on your query structure)
             if 'data' in data and 'rows' in data['data'] and len(data['data']['rows']) > 0:
-                return data['data']['rows'][0][0]  # Adjust index based on your needs
+                value = data['data']['rows'][0][0]
+                
+                # Format the value if it's a number
+                if isinstance(value, (int, float)):
+                    # Convert to Crores/Lakhs format
+                    if value >= 10000000:  # 1 Crore
+                        return f"₹{value/10000000:.2f} Cr"
+                    elif value >= 100000:  # 1 Lakh
+                        return f"₹{value/100000:.2f} L"
+                    else:
+                        return f"₹{value:,.0f}"
+                return str(value)
+        else:
+            st.warning(f"Failed to fetch card {card_id}: {response.status_code}")
         return "N/A"
     except Exception as e:
-        return "N/A"
-
-# Alternative: Fetch from Metabase public link/embed
-@st.cache_data(ttl=300)
-def fetch_metabase_public_metric(public_uuid):
-    """
-    Fetch data from a public Metabase question
-    public_uuid: The public UUID from the shared link
-    """
-    try:
-        response = requests.get(
-            f"{METABASE_URL}/api/public/card/{public_uuid}/query"
-        )
-        if response.status_code == 200:
-            data = response.json()
-            if 'data' in data and 'rows' in data['data'] and len(data['data']['rows']) > 0:
-                return data['data']['rows'][0][0]
-        return "N/A"
-    except Exception as e:
+        st.warning(f"Error fetching metric for card {card_id}: {str(e)}")
         return "N/A"
 
 # Custom CSS for KPI card style
@@ -288,7 +291,7 @@ st.markdown("""
     }
     
     .card-metric {
-        font-size: 1.3rem;
+        font-size: 1.15rem;
         color: rgba(255, 255, 255, 1);
         font-weight: 800;
         background: rgba(255, 255, 255, 0.25);
@@ -367,8 +370,8 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Get Metabase token (only if using authenticated API)
-# metabase_token = get_metabase_token()
+# Get Metabase token
+metabase_token = get_metabase_token()
 
 # Define brand dashboards with colors and Metabase card IDs
 brand_dashboards = [
@@ -379,7 +382,7 @@ brand_dashboards = [
         "description": "Harsh",
         "target": "₹15 Cr",
         "metabase_card_id": 123,  # Replace with actual Metabase question ID
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "blue"
     },
     {
@@ -389,7 +392,7 @@ brand_dashboards = [
         "description": "Ashutosh",
         "target": "₹18 Cr",
         "metabase_card_id": 124,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "green"
     },
     {
@@ -399,7 +402,7 @@ brand_dashboards = [
         "description": "Vivek",
         "target": "₹3 Cr",
         "metabase_card_id": 125,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "orange"
     },
     {
@@ -409,7 +412,7 @@ brand_dashboards = [
         "description": "Ajay",
         "target": "₹5 Cr",
         "metabase_card_id": 126,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "teal"
     },
     {
@@ -419,7 +422,7 @@ brand_dashboards = [
         "description": "Mumbai Team",
         "target": "₹18 Cr",
         "metabase_card_id": 127,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "purple"
     },
     {
@@ -429,7 +432,7 @@ brand_dashboards = [
         "description": "Shashikant",
         "target": "₹5 Cr",
         "metabase_card_id": 128,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "indigo"
     },
     {
@@ -439,7 +442,7 @@ brand_dashboards = [
         "description": "Nitin",
         "target": "₹15 Cr",
         "metabase_card_id": 129,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "red"
     },
     {
@@ -449,7 +452,7 @@ brand_dashboards = [
         "description": "Arvind Jaiswal",
         "target": "₹9 Cr",
         "metabase_card_id": 130,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "pink"
     },
     {
@@ -459,7 +462,7 @@ brand_dashboards = [
         "description": "Mumbai Team",
         "target": "₹25 Cr",
         "metabase_card_id": 193,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "blue"
     },
     {
@@ -469,7 +472,7 @@ brand_dashboards = [
         "description": "Prajwal",
         "target": "₹11 Cr",
         "metabase_card_id": 132,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "green"
     },
     {
@@ -479,7 +482,7 @@ brand_dashboards = [
         "description": "Vivek & Pranit",
         "target": "₹15 Cr",
         "metabase_card_id": 133,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "orange"
     },
     {
@@ -489,7 +492,7 @@ brand_dashboards = [
         "description": "Asim",
         "target": "₹10 Cr",
         "metabase_card_id": 134,
-        "metric_label": "MTD Disb.",
+        "metric_label": "MTD Disb",
         "color": "teal"
     }
 ]
@@ -503,9 +506,7 @@ for i in range(0, len(brand_dashboards), 4):
             brand = brand_dashboards[i + j]
             
             # Fetch metric from Metabase
-            # metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
-            # For demo purposes, using placeholder
-            metric_value = "₹8.5 Cr"  # Replace with actual API call
+            metric_value = fetch_metabase_metric(brand['metabase_card_id'], metabase_token)
             
             with cols[j]:
                 st.markdown(f"""
