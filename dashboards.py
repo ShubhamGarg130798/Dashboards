@@ -451,7 +451,7 @@ days_left = days_in_month - current_day
 st.markdown(f"""
     <div class="header-section">
         <div class="header-left">
-            <div class="main-title">Brand Dashboards Portal</div>
+            <div class="main-title">Performance Console</div>
             <div class="title-underline"></div>
         </div>
         <div class="header-right">
