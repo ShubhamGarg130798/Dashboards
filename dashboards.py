@@ -38,11 +38,11 @@ def get_metabase_token():
     except Exception as e:
         return None
 
-# Alternative approach: Use GET instead of POST for saved questions
+# Function to fetch data from Metabase
 @st.cache_data(ttl=300)  # Cache for 5 minutes
 def fetch_metabase_metric_v2(card_id, token):
     """
-    Alternative method: Fetch using GET request with query result
+    Fetch using /query/json endpoint
     """
     if not token:
         return "Auth Error"
@@ -93,46 +93,6 @@ def fetch_metabase_metric_v2(card_id, token):
         return f"Error {response.status_code}"
             
     except Exception as e:
-        return "Error"
-
-# Function to fetch data using public link (if available)
-@st.cache_data(ttl=300)
-def fetch_metabase_public(public_uuid):
-    """
-    Fetch from public Metabase link
-    """
-    try:
-        response = requests.get(
-            f"{METABASE_URL}/api/public/card/{public_uuid}/query/json",
-            timeout=45
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            
-            if isinstance(data, list) and len(data) > 0:
-                first_row = data[0]
-                if isinstance(first_row, dict):
-                    value = list(first_row.values())[0] if first_row else None
-                else:
-                    value = first_row
-                
-                if value is None:
-                    return "₹0.00"
-                
-                if isinstance(value, (int, float)):
-                    if value >= 10000000:
-                        return f"₹{value/10000000:.2f} Cr"
-                    elif value >= 100000:
-                        return f"₹{value/100000:.2f} L"
-                    else:
-                        return f"₹{value:,.0f}"
-                return str(value)
-            
-            return "₹0.00"
-        
-        return "Error"
-    except:
         return "Error"
 
 # Custom CSS for KPI card style
@@ -437,7 +397,7 @@ brand_dashboards = [
         "description": "Mumbai Team",
         "target": "₹25 Cr",
         "target_value": 25,
-        "metabase_card_id": 432,
+        "metabase_card_id": 441,
         "metric_label": "MTD Disb",
         "color": "blue"
     },
@@ -448,7 +408,7 @@ brand_dashboards = [
         "description": "Ashutosh",
         "target": "₹18 Cr",
         "target_value": 18,
-        "metabase_card_id": None,
+        "metabase_card_id": 432,
         "metric_label": "MTD Disb",
         "color": "green"
     },
@@ -459,7 +419,7 @@ brand_dashboards = [
         "description": "Mumbai Team",
         "target": "₹18 Cr",
         "target_value": 18,
-        "metabase_card_id": None,
+        "metabase_card_id": 437,
         "metric_label": "MTD Disb",
         "color": "purple"
     },
@@ -470,7 +430,7 @@ brand_dashboards = [
         "description": "Harsh",
         "target": "₹15 Cr",
         "target_value": 15,
-        "metabase_card_id": None,
+        "metabase_card_id": 433,
         "metric_label": "MTD Disb",
         "color": "blue"
     },
@@ -481,7 +441,7 @@ brand_dashboards = [
         "description": "Nitin",
         "target": "₹15 Cr",
         "target_value": 15,
-        "metabase_card_id": None,
+        "metabase_card_id": 439,
         "metric_label": "MTD Disb",
         "color": "red"
     },
@@ -492,7 +452,7 @@ brand_dashboards = [
         "description": "Vivek & Pranit",
         "target": "₹15 Cr",
         "target_value": 15,
-        "metabase_card_id": None,
+        "metabase_card_id": 436,
         "metric_label": "MTD Disb",
         "color": "orange"
     },
@@ -503,7 +463,7 @@ brand_dashboards = [
         "description": "Prajwal",
         "target": "₹11 Cr",
         "target_value": 11,
-        "metabase_card_id": None,
+        "metabase_card_id": 443,
         "metric_label": "MTD Disb",
         "color": "green"
     },
@@ -514,7 +474,7 @@ brand_dashboards = [
         "description": "Asim",
         "target": "₹10 Cr",
         "target_value": 10,
-        "metabase_card_id": None,
+        "metabase_card_id": 442,
         "metric_label": "MTD Disb",
         "color": "teal"
     },
@@ -525,7 +485,7 @@ brand_dashboards = [
         "description": "Arvind Jaiswal",
         "target": "₹9 Cr",
         "target_value": 9,
-        "metabase_card_id": None,
+        "metabase_card_id": 440,
         "metric_label": "MTD Disb",
         "color": "pink"
     },
@@ -536,7 +496,7 @@ brand_dashboards = [
         "description": "Ajay",
         "target": "₹5 Cr",
         "target_value": 5,
-        "metabase_card_id": None,
+        "metabase_card_id": 435,
         "metric_label": "MTD Disb",
         "color": "teal"
     },
@@ -547,7 +507,7 @@ brand_dashboards = [
         "description": "Shashikant",
         "target": "₹5 Cr",
         "target_value": 5,
-        "metabase_card_id": None,
+        "metabase_card_id": 438,
         "metric_label": "MTD Disb",
         "color": "indigo"
     },
@@ -558,7 +518,7 @@ brand_dashboards = [
         "description": "Vivek",
         "target": "₹3 Cr",
         "target_value": 3,
-        "metabase_card_id": None,
+        "metabase_card_id": 434,
         "metric_label": "MTD Disb",
         "color": "orange"
     }
