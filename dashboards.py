@@ -3,6 +3,7 @@ from datetime import datetime
 import calendar
 import requests
 import time
+from zoneinfo import ZoneInfo
 
 # Set page configuration
 st.set_page_config(
@@ -442,7 +443,9 @@ st.markdown("""
 
 # Get current date and calculate days left in month
 # Force fresh calculation every time - don't cache this
-now = datetime.now()
+# Use IST timezone explicitly
+ist_timezone = ZoneInfo("Asia/Kolkata")
+now = datetime.now(ist_timezone)
 current_date = now.strftime("%d %B %Y")
 current_day = now.day
 days_in_month = calendar.monthrange(now.year, now.month)[1]
