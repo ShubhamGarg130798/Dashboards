@@ -568,6 +568,42 @@ for brand in brand_dashboards:
 # Calculate total target
 total_target = sum([brand['target_value'] for brand in brand_dashboards])
 
+# Calculate Total MTD Target based on current day
+def calculate_mtd_target(current_day, total_target_cr):
+    """Calculate MTD Target based on the day of month"""
+    total_target_amount = total_target_cr * 10000000  # Convert to rupees
+    
+    if 1 <= current_day <= 5:
+        # 21.83% distributed over 5 days
+        mtd_percentage = 21.83 * (current_day / 5) / 100
+    elif 6 <= current_day <= 10:
+        # 21.83% from days 1-5 + 12.21% distributed from day 6-10
+        days_in_bracket = current_day - 5
+        mtd_percentage = (21.83 + 12.21 * (days_in_bracket / 5)) / 100
+    elif 11 <= current_day <= 15:
+        # Previous brackets + 8.73% distributed from day 11-15
+        days_in_bracket = current_day - 10
+        mtd_percentage = (21.83 + 12.21 + 8.73 * (days_in_bracket / 5)) / 100
+    elif 16 <= current_day <= 20:
+        # Previous brackets + 8.35% distributed from day 16-20
+        days_in_bracket = current_day - 15
+        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 * (days_in_bracket / 5)) / 100
+    elif 21 <= current_day <= 25:
+        # Previous brackets + 13.56% distributed from day 21-25
+        days_in_bracket = current_day - 20
+        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 + 13.56 * (days_in_bracket / 5)) / 100
+    else:  # 26-30/31
+        # Previous brackets + 35.31% distributed from day 26 onwards
+        days_in_month = calendar.monthrange(now.year, now.month)[1]
+        days_in_bracket = current_day - 25
+        total_days_in_bracket = days_in_month - 25
+        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 + 13.56 + 35.31 * (days_in_bracket / total_days_in_bracket)) / 100
+    
+    return total_target_amount * mtd_percentage
+
+mtd_target_amount = calculate_mtd_target(current_day, total_target)
+mtd_shortfall = mtd_target_amount - total_disbursement
+
 # Display summary card
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
@@ -601,6 +637,45 @@ st.markdown(f"""
                 </div>
                 <div style="font-size: 3rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'}; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
                     {(total_disbursement / (total_target * 10000000) * 100):.1f}%
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Display MTD Target Summary Card
+st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                border-radius: 24px; 
+                padding: 2.5rem; 
+                margin-bottom: 3rem;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.1);">
+        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL MTD DISBURSEMENT
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
+                    {format_total(total_disbursement)}
+                </div>
+            </div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL MTD TARGET
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
+                    {format_total(mtd_target_amount)}
+                </div>
+            </div>
+            <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
+                    TOTAL SHORTFALL
+                </div>
+                <div style="font-size: 3rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'}; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);">
+                    {format_total(abs(mtd_shortfall))}
                 </div>
             </div>
         </div>
