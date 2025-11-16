@@ -95,6 +95,53 @@ def fetch_metabase_metric_v2(card_id, token):
     except Exception as e:
         return "Error"
 
+# Function to fetch collection percentage
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def fetch_collection_percentage(card_id, token):
+    """
+    Fetch collection percentage from Metabase
+    """
+    if not token:
+        return "N/A"
+    
+    try:
+        headers = {
+            "X-Metabase-Session": token,
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(
+            f"{METABASE_URL}/api/card/{card_id}/query/json",
+            headers=headers,
+            json={"parameters": []},
+            timeout=45
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            if isinstance(data, list) and len(data) > 0:
+                first_row = data[0]
+                if isinstance(first_row, dict):
+                    value = list(first_row.values())[0] if first_row else None
+                else:
+                    value = first_row
+                
+                if value is None:
+                    return "0%"
+                
+                # Format as percentage
+                if isinstance(value, (int, float)):
+                    return f"{value:.1f}%"
+                return str(value)
+            
+            return "0%"
+        
+        return "N/A"
+            
+    except Exception as e:
+        return "N/A"
+
 # Function to calculate total from metric values
 def parse_metric_value(value_str):
     """Parse formatted metric value back to number"""
@@ -238,7 +285,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 200px;
+        height: 220px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -334,14 +381,15 @@ st.markdown("""
     }
     
     .card-metric {
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: rgba(255, 255, 255, 1);
         font-weight: 800;
         background: rgba(255, 255, 255, 0.25);
-        padding: 0.5rem 0.85rem;
+        padding: 0.4rem 0.75rem;
         border-radius: 8px;
         display: inline-block;
-        margin-top: 0.4rem;
+        margin-top: 0.3rem;
+        margin-right: 0.4rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
@@ -377,7 +425,7 @@ st.markdown("""
         
         .brand-card {
             padding: 1.5rem;
-            min-height: 180px;
+            min-height: 200px;
         }
         .card-brand-name {
             font-size: 1.5rem;
@@ -427,6 +475,7 @@ brand_dashboards = [
         "target": "₹25 Cr",
         "target_value": 25,
         "metabase_card_id": 441,
+        "collection_card_id": 453,
         "metric_label": "MTD Disb",
         "color": "blue"
     },
@@ -438,6 +487,7 @@ brand_dashboards = [
         "target": "₹18 Cr",
         "target_value": 18,
         "metabase_card_id": 432,
+        "collection_card_id": 445,
         "metric_label": "MTD Disb",
         "color": "green"
     },
@@ -449,6 +499,7 @@ brand_dashboards = [
         "target": "₹18 Cr",
         "target_value": 18,
         "metabase_card_id": 437,
+        "collection_card_id": 449,
         "metric_label": "MTD Disb",
         "color": "purple"
     },
@@ -460,6 +511,7 @@ brand_dashboards = [
         "target": "₹15 Cr",
         "target_value": 15,
         "metabase_card_id": 433,
+        "collection_card_id": 444,
         "metric_label": "MTD Disb",
         "color": "blue"
     },
@@ -471,6 +523,7 @@ brand_dashboards = [
         "target": "₹15 Cr",
         "target_value": 15,
         "metabase_card_id": 439,
+        "collection_card_id": 451,
         "metric_label": "MTD Disb",
         "color": "red"
     },
@@ -482,6 +535,7 @@ brand_dashboards = [
         "target": "₹15 Cr",
         "target_value": 15,
         "metabase_card_id": 436,
+        "collection_card_id": 448,
         "metric_label": "MTD Disb",
         "color": "orange"
     },
@@ -493,6 +547,7 @@ brand_dashboards = [
         "target": "₹11 Cr",
         "target_value": 11,
         "metabase_card_id": 443,
+        "collection_card_id": 455,
         "metric_label": "MTD Disb",
         "color": "green"
     },
@@ -504,6 +559,7 @@ brand_dashboards = [
         "target": "₹10 Cr",
         "target_value": 10,
         "metabase_card_id": 442,
+        "collection_card_id": 454,
         "metric_label": "MTD Disb",
         "color": "teal"
     },
@@ -515,6 +571,7 @@ brand_dashboards = [
         "target": "₹9 Cr",
         "target_value": 9,
         "metabase_card_id": 440,
+        "collection_card_id": 452,
         "metric_label": "MTD Disb",
         "color": "pink"
     },
@@ -526,6 +583,7 @@ brand_dashboards = [
         "target": "₹5 Cr",
         "target_value": 5,
         "metabase_card_id": 435,
+        "collection_card_id": 447,
         "metric_label": "MTD Disb",
         "color": "teal"
     },
@@ -537,6 +595,7 @@ brand_dashboards = [
         "target": "₹5 Cr",
         "target_value": 5,
         "metabase_card_id": 438,
+        "collection_card_id": 450,
         "metric_label": "MTD Disb",
         "color": "indigo"
     },
@@ -548,6 +607,7 @@ brand_dashboards = [
         "target": "₹3 Cr",
         "target_value": 3,
         "metabase_card_id": 434,
+        "collection_card_id": 446,
         "metric_label": "MTD Disb",
         "color": "orange"
     }
@@ -556,6 +616,7 @@ brand_dashboards = [
 # Fetch all metrics and calculate total
 total_disbursement = 0
 brand_metrics = {}
+brand_collections = {}
 
 for brand in brand_dashboards:
     if brand['metabase_card_id']:
@@ -564,6 +625,12 @@ for brand in brand_dashboards:
         total_disbursement += parse_metric_value(metric_value)
     else:
         brand_metrics[brand['name']] = "Coming Soon"
+    
+    if brand['collection_card_id']:
+        collection_value = fetch_collection_percentage(brand['collection_card_id'], metabase_token)
+        brand_collections[brand['name']] = collection_value
+    else:
+        brand_collections[brand['name']] = "N/A"
 
 # Calculate total target
 total_target = sum([brand['target_value'] for brand in brand_dashboards])
@@ -690,8 +757,9 @@ for i in range(0, len(brand_dashboards), 4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
             
-            # Use pre-fetched metric value
+            # Use pre-fetched metric values
             metric_value = brand_metrics.get(brand['name'], "Coming Soon")
+            collection_value = brand_collections.get(brand['name'], "N/A")
             
             with cols[j]:
                 st.markdown(f"""
@@ -705,6 +773,7 @@ for i in range(0, len(brand_dashboards), 4):
                                 <div class="card-description">👤 {brand['description']}</div>
                                 <div class="card-target">🎯 Target: {brand['target']}</div>
                                 <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
+                                <div class="card-metric">💰 Collection: {collection_value}</div>
                             </div>
                         </div>
                     </a>
