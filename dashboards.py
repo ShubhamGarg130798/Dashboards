@@ -671,7 +671,7 @@ def calculate_mtd_target(current_day, total_target_cr):
 mtd_target_amount = calculate_mtd_target(current_day, total_target)
 mtd_shortfall = mtd_target_amount - total_disbursement
 
-# Display summary card
+# Display summary card - REORDERED: Total Target, Total MTD Disbursement, Achievement
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
                 border-radius: 24px; 
@@ -682,19 +682,19 @@ st.markdown(f"""
         <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
             <div style="text-align: center;">
                 <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD DISBURSEMENT
+                    TOTAL TARGET
                 </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
-                    {format_total(total_disbursement)}
+                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
+                    ₹{total_target} Cr
                 </div>
             </div>
             <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
             <div style="text-align: center;">
                 <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL TARGET
+                    TOTAL MTD DISBURSEMENT
                 </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
-                    ₹{total_target} Cr
+                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
+                    {format_total(total_disbursement)}
                 </div>
             </div>
             <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
@@ -710,7 +710,7 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Display MTD Target Summary Card
+# Display MTD Target Summary Card - REORDERED: Total MTD Target, Total MTD Disbursement, Total Shortfall
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
                 border-radius: 24px; 
@@ -721,19 +721,19 @@ st.markdown(f"""
         <div style="display: grid; grid-template-columns: 1fr 2px 1fr 2px 1fr; align-items: center; gap: 2rem;">
             <div style="text-align: center;">
                 <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD DISBURSEMENT
+                    TOTAL MTD TARGET
                 </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
-                    {format_total(total_disbursement)}
+                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
+                    {format_total(mtd_target_amount)}
                 </div>
             </div>
             <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
             <div style="text-align: center;">
                 <div style="font-size: 1rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-bottom: 0.5rem;">
-                    TOTAL MTD TARGET
+                    TOTAL MTD DISBURSEMENT
                 </div>
-                <div style="font-size: 3rem; font-weight: 900; color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);">
-                    {format_total(mtd_target_amount)}
+                <div style="font-size: 3rem; font-weight: 900; color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);">
+                    {format_total(total_disbursement)}
                 </div>
             </div>
             <div style="width: 2px; height: 80px; background: rgba(255, 255, 255, 0.2);"></div>
