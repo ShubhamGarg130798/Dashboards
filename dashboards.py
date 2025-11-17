@@ -643,6 +643,19 @@ brand_dashboards = [
         "collection_card_id": 446,
         "metric_label": "MTD Disb",
         "color": "orange"
+    },
+    {
+        "name": "Minutes Loan",
+        "url": "https://tinyurl.com/yj3mss22",
+        "icon": "⏱️",
+        "description": "Pranit",
+        "target": "₹3 Cr",
+        "target_value": 3,
+        "metabase_card_id": 470,
+        "pmtd_card_id": None,
+        "collection_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "indigo"
     }
 ]
 
