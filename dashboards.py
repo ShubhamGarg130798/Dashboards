@@ -6,7 +6,7 @@ import time
 from zoneinfo import ZoneInfo
 
 # PASSWORD PROTECTION
-PASSWORD = "nbfcsecure123"
+PASSWORD = "#Nov2025#"
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
