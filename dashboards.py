@@ -286,7 +286,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 220px;
+        height: 240px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -635,15 +635,28 @@ total_pmtd_disbursement = 0
 brand_metrics = {}
 brand_pmtd_metrics = {}
 brand_collections = {}
+brand_yet_to_achieve = {}
 
 for brand in brand_dashboards:
     # Fetch MTD Disbursement
     if brand['metabase_card_id']:
         metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
         brand_metrics[brand['name']] = metric_value
-        total_disbursement += parse_metric_value(metric_value)
+        mtd_disb_value = parse_metric_value(metric_value)
+        total_disbursement += mtd_disb_value
+        
+        # Calculate Yet to Achieve
+        target_value = brand['target_value'] * 10000000  # Convert Cr to rupees
+        yet_to_achieve = target_value - mtd_disb_value
+        yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
+        
+        if yet_to_achieve > 0:
+            brand_yet_to_achieve[brand['name']] = f"{format_total(yet_to_achieve)} ({yet_to_achieve_pct:.0f}%)"
+        else:
+            brand_yet_to_achieve[brand['name']] = "Target Achieved! 🎉"
     else:
         brand_metrics[brand['name']] = "Coming Soon"
+        brand_yet_to_achieve[brand['name']] = "N/A"
     
     # Fetch PMTD Disbursement
     if brand['pmtd_card_id']:
@@ -827,6 +840,7 @@ for i in range(0, len(brand_dashboards), 4):
             # Use pre-fetched metric values
             metric_value = brand_metrics.get(brand['name'], "Coming Soon")
             collection_value = brand_collections.get(brand['name'], "N/A")
+            yet_to_achieve_value = brand_yet_to_achieve.get(brand['name'], "N/A")
             
             with cols[j]:
                 st.markdown(f"""
@@ -841,6 +855,7 @@ for i in range(0, len(brand_dashboards), 4):
                                 <div class="card-target">🎯 Target: {brand['target']}</div>
                                 <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
                                 <div class="card-metric">💰 Collection: {collection_value}</div>
+                                <div class="card-metric">🎯 Yet to Achieve: {yet_to_achieve_value}</div>
                             </div>
                         </div>
                     </a>
