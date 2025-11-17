@@ -286,7 +286,7 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: 240px;
+        height: 280px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -382,16 +382,17 @@ st.markdown("""
     }
     
     .card-metric {
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         color: rgba(255, 255, 255, 1);
         font-weight: 800;
         background: rgba(255, 255, 255, 0.25);
-        padding: 0.4rem 0.75rem;
+        padding: 0.35rem 0.7rem;
         border-radius: 8px;
         display: inline-block;
-        margin-top: 0.3rem;
-        margin-right: 0.4rem;
+        margin-top: 0.25rem;
+        margin-right: 0.35rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
+        line-height: 1.3;
     }
     
     /* Link styling */
@@ -853,9 +854,13 @@ for i in range(0, len(brand_dashboards), 4):
                             <div>
                                 <div class="card-description">👤 {brand['description']}</div>
                                 <div class="card-target">🎯 Target: {brand['target']}</div>
-                                <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
-                                <div class="card-metric">💰 Collection: {collection_value}</div>
-                                <div class="card-metric">🎯 Yet to Achieve: {yet_to_achieve_value}</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem;">
+                                    <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
+                                    <div class="card-metric">💰 Collection: {collection_value}</div>
+                                </div>
+                                <div style="margin-top: 0.25rem;">
+                                    <div class="card-metric">🎯 Yet to Achieve: {yet_to_achieve_value}</div>
+                                </div>
                             </div>
                         </div>
                     </a>
