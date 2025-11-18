@@ -656,6 +656,19 @@ brand_dashboards = [
         "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "indigo"
+    },
+    {
+        "name": "Paisa Pop",
+        "url": "https://tinyurl.com/4jd65fut",
+        "icon": "🎈",
+        "description": "Priyanka",
+        "target": "₹3 Cr",
+        "target_value": 3,
+        "metabase_card_id": 473,
+        "pmtd_card_id": 474,
+        "collection_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "pink"
     }
 ]
 
