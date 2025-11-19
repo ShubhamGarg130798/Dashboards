@@ -5,6 +5,22 @@ import requests
 import time
 from zoneinfo import ZoneInfo
 
+# PASSWORD PROTECTION
+PASSWORD = "nbfcsecure123"
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    password = st.text_input("Enter password to access dashboard:", type="password")
+    if password == PASSWORD:
+        st.session_state.authenticated = True
+        st.success("Access granted. Welcome!")
+        st.rerun()
+    elif password:
+        st.error("Incorrect password")
+    st.stop()
+
 # Set page configuration
 st.set_page_config(
     page_title="Brand Dashboards",
