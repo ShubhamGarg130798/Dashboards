@@ -713,7 +713,6 @@ for brand in brand_dashboards:
     # Fetch PMTD Disbursement
     if brand['pmtd_card_id']:
         pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
-        brand_pmtd_metrics[brand['name']] = pmtd_value
         pmtd_disb_value = parse_metric_value(pmtd_value)
         
         # Add secondary PMTD card if exists (for Zepto Finance)
@@ -721,6 +720,8 @@ for brand in brand_dashboards:
             secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
             pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
         
+        # Store the combined formatted value for display
+        brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
         total_pmtd_disbursement += pmtd_disb_value
     else:
         brand_pmtd_metrics[brand['name']] = "Coming Soon"
