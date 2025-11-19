@@ -671,6 +671,19 @@ brand_dashboards = [
         "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "pink"
+    },
+    {
+        "name": "Qua Loans",
+        "url": "https://tinyurl.com/bdhj328e",
+        "icon": "🔷",
+        "description": "Harsha & Nitin",
+        "target": "₹3 Cr",
+        "target_value": 3,
+        "metabase_card_id": 479,
+        "pmtd_card_id": 480,
+        "collection_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "blue"
     }
 ]
 
