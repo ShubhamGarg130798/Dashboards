@@ -600,7 +600,9 @@ brand_dashboards = [
         "target": "₹9 Cr",
         "target_value": 9,
         "metabase_card_id": 440,
+        "secondary_mtd_card_id": 476,
         "pmtd_card_id": 467,
+        "secondary_pmtd_card_id": 477,
         "collection_card_id": 452,
         "metric_label": "MTD Disb",
         "color": "pink"
@@ -686,6 +688,12 @@ for brand in brand_dashboards:
         metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
         brand_metrics[brand['name']] = metric_value
         mtd_disb_value = parse_metric_value(metric_value)
+        
+        # Add secondary MTD card if exists (for Zepto Finance)
+        if brand.get('secondary_mtd_card_id'):
+            secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
+            mtd_disb_value += parse_metric_value(secondary_metric_value)
+        
         total_disbursement += mtd_disb_value
         
         # Calculate Yet to Achieve
@@ -705,7 +713,14 @@ for brand in brand_dashboards:
     if brand['pmtd_card_id']:
         pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
         brand_pmtd_metrics[brand['name']] = pmtd_value
-        total_pmtd_disbursement += parse_metric_value(pmtd_value)
+        pmtd_disb_value = parse_metric_value(pmtd_value)
+        
+        # Add secondary PMTD card if exists (for Zepto Finance)
+        if brand.get('secondary_pmtd_card_id'):
+            secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
+            pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
+        
+        total_pmtd_disbursement += pmtd_disb_value
     else:
         brand_pmtd_metrics[brand['name']] = "Coming Soon"
     
