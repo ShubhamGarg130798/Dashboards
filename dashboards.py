@@ -686,7 +686,6 @@ for brand in brand_dashboards:
     # Fetch MTD Disbursement
     if brand['metabase_card_id']:
         metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
-        brand_metrics[brand['name']] = metric_value
         mtd_disb_value = parse_metric_value(metric_value)
         
         # Add secondary MTD card if exists (for Zepto Finance)
@@ -694,6 +693,8 @@ for brand in brand_dashboards:
             secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
             mtd_disb_value += parse_metric_value(secondary_metric_value)
         
+        # Store the combined formatted value for display
+        brand_metrics[brand['name']] = format_total(mtd_disb_value)
         total_disbursement += mtd_disb_value
         
         # Calculate Yet to Achieve
