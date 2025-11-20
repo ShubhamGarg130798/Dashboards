@@ -684,6 +684,32 @@ brand_dashboards = [
         "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "blue"
+    },
+    {
+        "name": "Salary 4 You",
+        "url": "https://tinyurl.com/p43ptyp4",
+        "icon": "💵",
+        "description": "Nadeem",
+        "target": "₹3 Cr",
+        "target_value": 3,
+        "metabase_card_id": 486,
+        "pmtd_card_id": 488,
+        "collection_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "green"
+    },
+    {
+        "name": "Rupee Hype",
+        "url": "https://tinyurl.com/39ztaew8",
+        "icon": "🚀",
+        "description": "Nadeem",
+        "target": "₹1 Cr",
+        "target_value": 1,
+        "metabase_card_id": 485,
+        "pmtd_card_id": 487,
+        "collection_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "purple"
     }
 ]
 
