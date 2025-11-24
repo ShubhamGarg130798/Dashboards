@@ -954,7 +954,7 @@ for i in range(0, len(brand_dashboards), 4):
                                 <div class="card-target">🎯 Target: {brand['target']}</div>
                                 <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem;">
                                     <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
-                                    <div class="card-metric">💰 Collection: {collection_value}</div>
+                                    <div class="card-metric">💰 Collection MTD: {collection_value}</div>
                                 </div>
                                 <div style="margin-top: 0.25rem;">
                                     <div class="card-metric">🎯 Yet to Achieve: {yet_to_achieve_value}</div>
