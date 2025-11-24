@@ -694,7 +694,7 @@ brand_dashboards = [
         "target_value": 3,
         "metabase_card_id": 486,
         "pmtd_card_id": 488,
-        "collection_card_id": None,
+        "collection_card_id": 491,
         "metric_label": "MTD Disb",
         "color": "green"
     },
@@ -707,7 +707,7 @@ brand_dashboards = [
         "target_value": 1,
         "metabase_card_id": 485,
         "pmtd_card_id": 487,
-        "collection_card_id": None,
+        "collection_card_id": 492,
         "metric_label": "MTD Disb",
         "color": "purple"
     }
