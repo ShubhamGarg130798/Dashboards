@@ -4,6 +4,9 @@ import calendar
 import requests
 import time
 from zoneinfo import ZoneInfo
+import json
+from pathlib import Path
+from datetime import timedelta
 
 # PASSWORD PROTECTION
 PASSWORD = "nbfcsecure123"
@@ -20,6 +23,53 @@ if not st.session_state.authenticated:
     elif password:
         st.error("Incorrect password")
     st.stop()
+
+# ===== DISBURSEMENT HISTORY TRACKING =====
+HISTORY_FILE = "disbursement_history.json"
+
+def load_disbursement_history():
+    """Load historical disbursement data"""
+    if Path(HISTORY_FILE).exists():
+        try:
+            with open(HISTORY_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_daily_disbursement(date_str, amount):
+    """Save daily disbursement amount"""
+    history = load_disbursement_history()
+    history[date_str] = amount
+    
+    # Keep only last 60 days
+    if len(history) > 60:
+        sorted_dates = sorted(history.keys())
+        history = {k: history[k] for k in sorted_dates[-60:]}
+    
+    with open(HISTORY_FILE, 'w') as f:
+        json.dump(history, f, indent=2)
+
+def get_previous_day_disbursement(now):
+    """Get previous day's disbursement"""
+    history = load_disbursement_history()
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    return history.get(yesterday, 0)
+
+def get_previous_day_number(now):
+    """Get what day of month it was yesterday"""
+    yesterday = now - timedelta(days=1)
+    return yesterday.day
+
+# ===== ONE-TIME SETUP - Seed yesterday's data =====
+# Remove this block after first run, or keep it (it won't overwrite existing data)
+if not Path(HISTORY_FILE).exists():
+    history = {
+        "2024-11-25": 733500000  # ₹73.35 Cr from yesterday EOD
+    }
+    with open(HISTORY_FILE, 'w') as f:
+        json.dump(history, f, indent=2)
+# ===== END ONE-TIME SETUP =====
 
 # Set page configuration
 st.set_page_config(
@@ -851,39 +901,43 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 # Calculate percentages
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-# ========== PREDICTION MODELS ==========
-# Calculate predicted month-end disbursement based on current performance
+# ========== IMPROVED SG SCORE CALCULATION USING PREVIOUS DAY DATA ==========
 
-# Method 1: Simple Linear Extrapolation
-# Assumes constant daily run rate
-daily_avg = total_disbursement / current_day if current_day > 0 else 0
-linear_projection = (total_disbursement / current_day * days_in_month) if current_day > 0 else 0
+# Save today's disbursement FIRST (for tomorrow's use)
+today_str = now.strftime("%Y-%m-%d")
+save_daily_disbursement(today_str, total_disbursement)
 
-# Method 2: Pattern-Based Prediction (Most Accurate)
-# Uses the same bracket distribution pattern with current achievement rate
-mtd_target_percentage = 64.68 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
-remaining_target_percentage = 100 - mtd_target_percentage
-achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
+# Get previous day's data
+previous_day_disbursement = get_previous_day_disbursement(now)
+previous_day_number = get_previous_day_number(now)
 
-# Calculate expected disbursement for remaining days based on pattern
-remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
-projected_remaining = remaining_days_target * achievement_rate
-pattern_based_projection = total_disbursement + projected_remaining
-
-# Method 3: Weighted Prediction (Conservative)
-# Assumes 80% efficiency in remaining days
-conservative_projection = total_disbursement + (remaining_days_target * achievement_rate * 0.8)
-
-# Method 4: Optimistic Prediction
-# Assumes improvement to 100% target achievement rate
-optimistic_projection = total_disbursement + remaining_days_target
-
-# Use pattern-based as primary prediction
-projected_month_end = pattern_based_projection
-
-# Calculate projected shortfall
-projected_shortfall = (total_target * 10000000) - projected_month_end
-projected_achievement_pct = (projected_month_end / (total_target * 10000000) * 100) if total_target > 0 else 0
+# Check if we have yesterday's data
+if previous_day_disbursement > 0 and previous_day_number > 0:
+    # ===== USE YESTERDAY'S DATA (More Accurate) =====
+    # Calculate what the MTD target was on the previous day
+    previous_mtd_target = calculate_mtd_target(previous_day_number, total_target)
+    
+    # Calculate achievement rate based on previous day
+    previous_achievement_rate = (previous_day_disbursement / previous_mtd_target) if previous_mtd_target > 0 else 0
+    
+    # Calculate remaining target percentage from previous day to month end
+    previous_mtd_target_pct = (calculate_mtd_target(previous_day_number, 100) / 10000000)
+    remaining_target_percentage = 100 - previous_mtd_target_pct
+    
+    # Project based on previous day's achievement rate
+    remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
+    projected_remaining = remaining_days_target * previous_achievement_rate
+    projected_month_end = previous_day_disbursement + projected_remaining
+    
+else:
+    # ===== FALLBACK: USE TODAY'S DATA (First day of tracking) =====
+    mtd_target_percentage = (calculate_mtd_target(current_day, 100) / 10000000)
+    remaining_target_percentage = 100 - mtd_target_percentage
+    achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
+    
+    remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
+    projected_remaining = remaining_days_target * achievement_rate
+    projected_month_end = total_disbursement + projected_remaining
 
 # SG Score - Shows Projected Month-End
 sg_score = format_total(projected_month_end)
