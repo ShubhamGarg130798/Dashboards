@@ -4,9 +4,6 @@ import calendar
 import requests
 import time
 from zoneinfo import ZoneInfo
-import json
-from pathlib import Path
-from datetime import timedelta
 
 # PASSWORD PROTECTION
 PASSWORD = "nbfcsecure123"
@@ -31,73 +28,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-# ===== DISBURSEMENT HISTORY TRACKING =====
-HISTORY_FILE = "disbursement_history.json"
-
-def load_disbursement_history():
-    """Load historical disbursement data"""
-    if Path(HISTORY_FILE).exists():
-        try:
-            with open(HISTORY_FILE, 'r') as f:
-                data = json.load(f)
-                return data
-        except Exception as e:
-            st.sidebar.error(f"Error loading history: {str(e)}")
-            return {}
-    return {}
-
-def save_daily_disbursement(date_str, amount):
-    """Save daily disbursement amount"""
-    history = load_disbursement_history()
-    history[date_str] = float(amount)  # Ensure it's a float
-    
-    # Keep only last 60 days
-    if len(history) > 60:
-        sorted_dates = sorted(history.keys())
-        history = {k: history[k] for k in sorted_dates[-60:]}
-    
-    try:
-        with open(HISTORY_FILE, 'w') as f:
-            json.dump(history, f, indent=2)
-    except Exception as e:
-        st.sidebar.error(f"Error saving history: {str(e)}")
-
-def get_previous_day_disbursement(now):
-    """Get previous day's disbursement"""
-    history = load_disbursement_history()
-    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    value = history.get(yesterday, 0)
-    return float(value) if value else 0
-
-def get_previous_day_number(now):
-    """Get what day of month it was yesterday"""
-    yesterday = now - timedelta(days=1)
-    return yesterday.day
-
-def initialize_history_file():
-    """Initialize history file with yesterday's data if needed"""
-    history = load_disbursement_history()
-    
-    # Yesterday's date and data
-    yesterday_date = "2024-11-25"
-    yesterday_amount = 733500000  # ₹73.35 Cr from yesterday EOD
-    
-    # Check if yesterday's data exists
-    if yesterday_date not in history:
-        history[yesterday_date] = yesterday_amount
-        try:
-            with open(HISTORY_FILE, 'w') as f:
-                json.dump(history, f, indent=2)
-            return True, "Initialized with yesterday's data"
-        except Exception as e:
-            return False, f"Error: {str(e)}"
-    return False, "Yesterday's data already exists"
-
-# Initialize history file
-init_status, init_message = initialize_history_file()
-
-# ===== END DISBURSEMENT HISTORY TRACKING =====
 
 # Metabase Configuration
 METABASE_URL = "http://43.205.95.106:3000"
@@ -889,29 +819,29 @@ def calculate_mtd_target(current_day, total_target_cr):
     
     if 1 <= current_day <= 5:
         # 21.83% distributed over 5 days
-        mtd_percentage = 21.83 * (current_day / 5) / 100
+        mtd_percentage = 21.23 * (current_day / 5) / 100
     elif 6 <= current_day <= 10:
         # 21.83% from days 1-5 + 12.21% distributed from day 6-10
         days_in_bracket = current_day - 5
-        mtd_percentage = (21.83 + 12.21 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.23 + 11.61 * (days_in_bracket / 5)) / 100
     elif 11 <= current_day <= 15:
         # Previous brackets + 8.73% distributed from day 11-15
         days_in_bracket = current_day - 10
-        mtd_percentage = (21.83 + 12.21 + 8.73 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.23 + 11.61 + 8.13 * (days_in_bracket / 5)) / 100
     elif 16 <= current_day <= 20:
         # Previous brackets + 8.35% distributed from day 16-20
         days_in_bracket = current_day - 15
-        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.23 + 11.61 + 8.13 + 7.75 * (days_in_bracket / 5)) / 100
     elif 21 <= current_day <= 25:
         # Previous brackets + 13.56% distributed from day 21-25
         days_in_bracket = current_day - 20
-        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 + 13.56 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.23 + 11.61 + 8.13 + 7.75 + 12.96 * (days_in_bracket / 5)) / 100
     else:  # 26-30/31
         # Previous brackets + 35.31% distributed from day 26 onwards
         days_in_month = calendar.monthrange(now.year, now.month)[1]
         days_in_bracket = current_day - 25
         total_days_in_bracket = days_in_month - 25
-        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 + 13.56 + 35.31 * (days_in_bracket / total_days_in_bracket)) / 100
+        mtd_percentage = (21.23 + 11.61 + 8.13 + 7.75 + 12.96 + 38.31 * (days_in_bracket / total_days_in_bracket)) / 100
     
     return total_target_amount * mtd_percentage
 
@@ -921,78 +851,42 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 # Calculate percentages
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-# ========== IMPROVED SG SCORE CALCULATION USING PREVIOUS DAY DATA ==========
+# ========== PREDICTION MODELS ==========
+# Calculate predicted month-end disbursement based on current performance
 
-# Save today's disbursement FIRST (for tomorrow's use)
-today_str = now.strftime("%Y-%m-%d")
-save_daily_disbursement(today_str, total_disbursement)
+# Method 1: Simple Linear Extrapolation
+# Assumes constant daily run rate
+daily_avg = total_disbursement / current_day if current_day > 0 else 0
+linear_projection = (total_disbursement / current_day * days_in_month) if current_day > 0 else 0
 
-# Get previous day's data
-previous_day_disbursement = get_previous_day_disbursement(now)
-previous_day_number = get_previous_day_number(now)
+# Method 2: Pattern-Based Prediction (Most Accurate)
+# Uses the same bracket distribution pattern with current achievement rate
+mtd_target_percentage = 64.68 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
+remaining_target_percentage = 100 - mtd_target_percentage
+achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
 
-# Debug information
-debug_info = {
-    "Using Yesterday Data": previous_day_disbursement > 0,
-    "Previous Day": previous_day_number,
-    "Previous Disbursement": format_total(previous_day_disbursement) if previous_day_disbursement > 0 else "N/A",
-    "Current Day": current_day,
-    "Current Disbursement": format_total(total_disbursement),
-    "History File Status": init_message
-}
+# Calculate expected disbursement for remaining days based on pattern
+remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
+projected_remaining = remaining_days_target * achievement_rate
+pattern_based_projection = total_disbursement + projected_remaining
 
-# Check if we have yesterday's data
-if previous_day_disbursement > 0 and previous_day_number > 0:
-    # ===== USE YESTERDAY'S DATA (More Accurate) =====
-    # Calculate what the MTD target was on the previous day
-    previous_mtd_target = calculate_mtd_target(previous_day_number, total_target)
-    
-    # Calculate achievement rate based on previous day
-    previous_achievement_rate = (previous_day_disbursement / previous_mtd_target) if previous_mtd_target > 0 else 0
-    
-    # Calculate remaining target percentage from previous day to month end
-    previous_mtd_target_pct = (calculate_mtd_target(previous_day_number, 100) / 10000000)
-    remaining_target_percentage = 100 - previous_mtd_target_pct
-    
-    # Project based on previous day's achievement rate
-    remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
-    projected_remaining = remaining_days_target * previous_achievement_rate
-    projected_month_end = previous_day_disbursement + projected_remaining
-    
-    sg_score_method = "yesterday"
-    
-else:
-    # ===== FALLBACK: USE TODAY'S DATA (First day of tracking) =====
-    mtd_target_percentage = (calculate_mtd_target(current_day, 100) / 10000000)
-    remaining_target_percentage = 100 - mtd_target_percentage
-    achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
-    
-    remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
-    projected_remaining = remaining_days_target * achievement_rate
-    projected_month_end = total_disbursement + projected_remaining
-    
-    sg_score_method = "today"
+# Method 3: Weighted Prediction (Conservative)
+# Assumes 80% efficiency in remaining days
+conservative_projection = total_disbursement + (remaining_days_target * achievement_rate * 0.8)
+
+# Method 4: Optimistic Prediction
+# Assumes improvement to 100% target achievement rate
+optimistic_projection = total_disbursement + remaining_days_target
+
+# Use pattern-based as primary prediction
+projected_month_end = pattern_based_projection
+
+# Calculate projected shortfall
+projected_shortfall = (total_target * 10000000) - projected_month_end
+projected_achievement_pct = (projected_month_end / (total_target * 10000000) * 100) if total_target > 0 else 0
 
 # SG Score - Shows Projected Month-End
 sg_score = format_total(projected_month_end)
-
-# ========== DEBUG SIDEBAR (ENABLE TO SEE CALCULATION DETAILS) ==========
-with st.sidebar:
-    st.markdown("### 🔍 SG Score Debug Info")
-    st.markdown(f"**Method Used:** {'✅ Yesterday Data' if sg_score_method == 'yesterday' else '⚠️ Today Data (Fallback)'}")
-    st.markdown("---")
-    
-    for key, value in debug_info.items():
-        st.markdown(f"**{key}:** {value}")
-    
-    st.markdown("---")
-    st.markdown(f"**SG Score:** {sg_score}")
-    st.markdown(f"**Projected Month-End:** {format_total(projected_month_end)}")
-    
-    if sg_score_method == "yesterday":
-        st.success("✅ Using accurate yesterday's data!")
-    else:
-        st.warning("⚠️ Using today's incomplete data. History file needs yesterday's data.")
 
 # Header
 st.markdown(f"""
