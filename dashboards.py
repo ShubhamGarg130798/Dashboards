@@ -85,7 +85,6 @@ def fetch_metabase_metric_v2(card_id, token):
             if isinstance(data, list) and len(data) > 0:
                 # Get the first row
                 first_row = data[0]
-                
                 # Get the first value (should be total_disbursed_amount)
                 if isinstance(first_row, dict):
                     # Get the value from the dict
@@ -104,13 +103,12 @@ def fetch_metabase_metric_v2(card_id, token):
                         return f"₹{value/100000:.2f} L"
                     else:
                         return f"₹{value:,.0f}"
-                
                 return str(value)
             
             return "₹0.00"
         
         return f"Error {response.status_code}"
-        
+            
     except Exception as e:
         return "Error"
 
@@ -141,7 +139,6 @@ def fetch_collection_percentage(card_id, token):
             
             if isinstance(data, list) and len(data) > 0:
                 first_row = data[0]
-                
                 if isinstance(first_row, dict):
                     value = list(first_row.values())[0] if first_row else None
                 else:
@@ -153,13 +150,12 @@ def fetch_collection_percentage(card_id, token):
                 # Format as percentage
                 if isinstance(value, (int, float)):
                     return f"{value:.1f}%"
-                
                 return str(value)
             
             return "0%"
         
         return "N/A"
-        
+            
     except Exception as e:
         return "N/A"
 
@@ -169,10 +165,8 @@ def parse_metric_value(value_str):
     if isinstance(value_str, str):
         if "Error" in value_str or value_str == "Coming Soon":
             return 0
-        
         # Remove currency symbol and spaces
         value_str = value_str.replace('₹', '').replace(',', '').strip()
-        
         # Handle Cr and L suffixes
         if 'Cr' in value_str:
             return float(value_str.replace('Cr', '').strip()) * 10000000
@@ -197,45 +191,306 @@ def format_total(value):
 # Custom CSS for KPI card style
 st.markdown("""
     <style>
-    .kpi-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        border-radius: 10px;
-        color: white;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    
+    /* Global Styles */
+    * {
+        font-family: 'Inter', sans-serif;
     }
-    .kpi-value {
-        font-size: 28px;
-        font-weight: bold;
-        margin: 10px 0;
+    
+    /* Override Streamlit's default backgrounds */
+    .stApp {
+        background: #ffffff;
     }
-    .kpi-label {
-        font-size: 14px;
-        opacity: 0.9;
+    
+    .main {
+        background: transparent;
+        padding: 0;
     }
-    .brand-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid #667eea;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
+    
+    .block-container {
+        padding: 2rem 3rem;
+        max-width: 1600px;
+        background: transparent;
     }
-    .brand-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    
+    /* Ensure all parent elements have white background */
+    section[data-testid="stAppViewContainer"] {
+        background: #ffffff;
     }
-    .metric-row {
+    
+    [data-testid="stHeader"] {
+        background: transparent;
+    }
+    
+    /* Header Styling */
+    .header-section {
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
         display: flex;
         justify-content: space-between;
-        margin: 8px 0;
-        padding: 8px;
-        background: #f8f9fa;
-        border-radius: 5px;
+        align-items: center;
+        position: relative;
+    }
+    
+    .header-left {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .header-left-score {
+        position: absolute;
+        left: 3rem;
+        top: 2rem;
+    }
+    
+    .sg-score-card {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #2563eb;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .sg-score-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1e40af;
+    }
+    
+    .header-right {
+        position: absolute;
+        right: 3rem;
+        top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .current-date {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .days-left {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #f59e0b;
+        background: #fef3c7;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        border: 2px solid #fbbf24;
+        text-align: center;
+    }
+    
+    .main-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #2563eb;
+        margin-bottom: 1rem;
+        letter-spacing: -1px;
+        line-height: 1.1;
+    }
+    
+    .title-underline {
+        width: 240px;
+        height: 6px;
+        background: linear-gradient(to right, #3b82f6, #8b5cf6);
+        border-radius: 3px;
+        margin: 0 auto;
+    }
+    
+    /* Brand Card Container */
+    .brand-card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Individual Brand Card */
+    .brand-card {
+        border-radius: 16px;
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .brand-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Card Colors */
+    .card-blue {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+    
+    .card-green {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .card-orange {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .card-teal {
+        background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+    }
+    
+    .card-purple {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    
+    .card-indigo {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .card-red {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .card-pink {
+        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+    
+    /* Card Header */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-label {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.95);
+        text-transform: capitalize;
+        letter-spacing: 0.3px;
+    }
+    
+    .card-icon {
+        font-size: 1.5rem;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 0.4rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        min-height: 40px;
+    }
+    
+    /* Card Content */
+    .card-brand-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.3rem;
+        line-height: 1.2;
+    }
+    
+    .card-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+    }
+    
+    .card-target {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 500;
+        margin-bottom: 0.2rem;
+    }
+    
+    .card-metric {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 1);
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 0.35rem 0.7rem;
+        border-radius: 8px;
+        display: inline-block;
+        margin-top: 0.25rem;
+        margin-right: 0.35rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        line-height: 1.3;
+    }
+    
+    /* Link styling */
+    a {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+    
+    /* Hide Streamlit elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    header {visibility: hidden;}
+    
+    /* Column styling */
+    [data-testid="column"] {
+        padding: 0 0.4rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .header-section {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .header-left-score {
+            position: relative;
+            left: auto;
+            top: auto;
+            margin-bottom: 1rem;
+        }
+        
+        .header-right {
+            position: relative;
+            right: auto;
+            top: auto;
+        }
+        
+        .brand-card {
+            padding: 1.5rem;
+            min-height: 200px;
+        }
+        .card-brand-name {
+            font-size: 1.5rem;
+        }
+        .main-title {
+            font-size: 2.5rem;
+        }
+        .title-underline {
+            width: 150px;
+        }
     }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Get current date and calculate days left in month
 # Force fresh calculation every time - don't cache this
@@ -563,30 +818,30 @@ def calculate_mtd_target(current_day, total_target_cr):
     total_target_amount = total_target_cr * 10000000  # Convert to rupees
     
     if 1 <= current_day <= 5:
-        # 21.2366% distributed over 5 days
-        mtd_percentage = 21.2366 * (current_day / 5) / 100
+        # 21.83% distributed over 5 days
+        mtd_percentage = 21.83 * (current_day / 5) / 100
     elif 6 <= current_day <= 10:
-        # 21.2366% from days 1-5 + 11.62% distributed from day 6-10
+        # 21.83% from days 1-5 + 12.21% distributed from day 6-10
         days_in_bracket = current_day - 5
-        mtd_percentage = (21.2366 + 11.62 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.83 + 12.21 * (days_in_bracket / 5)) / 100
     elif 11 <= current_day <= 15:
-        # Previous brackets + 8.13% distributed from day 11-15
+        # Previous brackets + 8.73% distributed from day 11-15
         days_in_bracket = current_day - 10
-        mtd_percentage = (21.2366 + 11.62 + 8.13 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.83 + 12.21 + 8.73 * (days_in_bracket / 5)) / 100
     elif 16 <= current_day <= 20:
-        # Previous brackets + 7.75% distributed from day 16-20
+        # Previous brackets + 8.35% distributed from day 16-20
         days_in_bracket = current_day - 15
-        mtd_percentage = (21.2366 + 11.62 + 8.13 + 7.75 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 * (days_in_bracket / 5)) / 100
     elif 21 <= current_day <= 25:
-        # Previous brackets + 12.96% distributed from day 21-25
+        # Previous brackets + 13.56% distributed from day 21-25
         days_in_bracket = current_day - 20
-        mtd_percentage = (21.2366 + 11.62 + 8.13 + 7.75 + 12.96 * (days_in_bracket / 5)) / 100
+        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 + 13.56 * (days_in_bracket / 5)) / 100
     else:  # 26-30/31
-        # Previous brackets + 38.3134% distributed from day 26 onwards
+        # Previous brackets + 35.31% distributed from day 26 onwards
         days_in_month = calendar.monthrange(now.year, now.month)[1]
         days_in_bracket = current_day - 25
         total_days_in_bracket = days_in_month - 25
-        mtd_percentage = (21.2366 + 11.62 + 8.13 + 7.75 + 12.96 + 38.3134 * (days_in_bracket / total_days_in_bracket)) / 100
+        mtd_percentage = (21.83 + 12.21 + 8.73 + 8.35 + 13.56 + 35.31 * (days_in_bracket / total_days_in_bracket)) / 100
     
     return total_target_amount * mtd_percentage
 
@@ -597,7 +852,6 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
 # ========== PREDICTION MODELS ==========
-
 # Calculate predicted month-end disbursement based on current performance
 
 # Method 1: Simple Linear Extrapolation
@@ -607,7 +861,7 @@ linear_projection = (total_disbursement / current_day * days_in_month) if curren
 
 # Method 2: Pattern-Based Prediction (Most Accurate)
 # Uses the same bracket distribution pattern with current achievement rate
-mtd_target_percentage = 61.6966 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
+mtd_target_percentage = 64.68 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
 remaining_target_percentage = 100 - mtd_target_percentage
 achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
 
@@ -636,19 +890,23 @@ sg_score = format_total(projected_month_end)
 
 # Header
 st.markdown(f"""
-    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
-        <div style='display: flex; justify-content: space-between; align-items: center;'>
-            <div>
-                <h1 style='color: white; margin: 0; font-size: 36px;'>⭐ SG Score: {sg_score}</h1>
-                <p style='color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 18px;'>Performance Console</p>
-            </div>
-            <div style='text-align: right;'>
-                <p style='color: white; margin: 0; font-size: 18px;'>📅 {current_date}</p>
-                <p style='color: rgba(255, 255, 255, 0.9); margin: 5px 0 0 0; font-size: 16px;'>⏰ {days_left} days left in month</p>
+    <div class="header-section">
+        <div class="header-left-score">
+            <div class="sg-score-card">
+                <span>⭐ SG Score:</span>
+                <span class="sg-score-value">{sg_score}</span>
             </div>
         </div>
+        <div class="header-left">
+            <div class="main-title">Performance Console</div>
+            <div class="title-underline"></div>
+        </div>
+        <div class="header-right">
+            <div class="current-date">📅 {current_date}</div>
+            <div class="days-left">⏰ {days_left} days left in month</div>
+        </div>
     </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Display summary cards in vertical layout (3 columns)
 cols = st.columns(3, gap="medium")
@@ -656,64 +914,107 @@ cols = st.columns(3, gap="medium")
 # Monthly Goal Status Card
 with cols[0]:
     st.markdown(f"""
-        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
-            <h3 style='margin: 0 0 20px 0; font-size: 20px;'>🌍 Monthly Goal Status</h3>
-            <div style='background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 12px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Total Target</div>
-                <div style='font-size: 24px; font-weight: bold;'>₹{total_target} Cr</div>
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                    border-radius: 20px; 
+                    padding: 2rem; 
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    border: 2px solid rgba(255, 255, 255, 0.1);
+                    height: 380px;
+                    display: flex;
+                    flex-direction: column;">
+            <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
+                🌍 Monthly Goal Status
             </div>
-            <div style='background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 12px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Total MTD Disbursement</div>
-                <div style='font-size: 24px; font-weight: bold;'>{format_total(total_disbursement)}</div>
-            </div>
-            <div style='background: rgba(255, 255, 255, 0.15); padding: 15px; border-radius: 8px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Achievement</div>
-                <div style='font-size: 28px; font-weight: bold;'>{(total_disbursement / (total_target * 10000000) * 100):.1f}%</div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total Target</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #3b82f6;">₹{total_target} Cr</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Disbursement</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Achievement</div>
+                    <div style="font-size: 2rem; font-weight: 900; color: {'#10b981' if total_disbursement >= total_target * 10000000 else '#f59e0b'};">
+                        {(total_disbursement / (total_target * 10000000) * 100):.1f}%
+                    </div>
+                </div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 # Monthly Shortfall Card
 with cols[1]:
     st.markdown(f"""
-        <div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
-            <h3 style='margin: 0 0 20px 0; font-size: 20px;'>📈 Monthly Shortfall</h3>
-            <div style='background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 12px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Total MTD Target</div>
-                <div style='font-size: 24px; font-weight: bold;'>{format_total(mtd_target_amount)}</div>
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                    border-radius: 20px; 
+                    padding: 2rem; 
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    border: 2px solid rgba(255, 255, 255, 0.1);
+                    height: 380px;
+                    display: flex;
+                    flex-direction: column;">
+            <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
+                📈 Monthly Shortfall
             </div>
-            <div style='background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 12px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Total MTD Disbursement</div>
-                <div style='font-size: 24px; font-weight: bold;'>{format_total(total_disbursement)}</div>
-            </div>
-            <div style='background: rgba(255, 255, 255, 0.15); padding: 15px; border-radius: 8px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Shortfall (Amount and %)</div>
-                <div style='font-size: 22px; font-weight: bold;'>{format_total(abs(mtd_shortfall))}</div>
-                <div style='font-size: 20px; font-weight: bold; margin-top: 5px;'>{'↓' if mtd_shortfall > 0 else '↑'} {shortfall_percentage:.1f}%</div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Target</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #3b82f6;">{format_total(mtd_target_amount)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Disbursement</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Shortfall (Amount and %)</div>
+                    <div style="font-size: 2rem; font-weight: 900; color: {'#ef4444' if mtd_shortfall > 0 else '#10b981'};">
+                        {format_total(abs(mtd_shortfall))}
+                    </div>
+                    <div style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.3rem;">
+                        {'↓' if mtd_shortfall > 0 else '↑'} {shortfall_percentage:.1f}%
+                    </div>
+                </div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 # MoM Growth Card
 with cols[2]:
     st.markdown(f"""
-        <div style='background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 25px; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
-            <h3 style='margin: 0 0 20px 0; font-size: 20px;'>🏆 MoM Growth</h3>
-            <div style='background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 12px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Total PMTD Disbursement</div>
-                <div style='font-size: 24px; font-weight: bold;'>{format_total(total_pmtd_disbursement)}</div>
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                    border-radius: 20px; 
+                    padding: 2rem; 
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    border: 2px solid rgba(255, 255, 255, 0.1);
+                    height: 380px;
+                    display: flex;
+                    flex-direction: column;">
+            <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
+                🏆 MoM Growth
             </div>
-            <div style='background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 12px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>Total MTD Disbursement</div>
-                <div style='font-size: 24px; font-weight: bold;'>{format_total(total_disbursement)}</div>
-            </div>
-            <div style='background: rgba(255, 255, 255, 0.15); padding: 15px; border-radius: 8px;'>
-                <div style='font-size: 13px; opacity: 0.9; margin-bottom: 5px;'>MOM Growth (Amount and %)</div>
-                <div style='font-size: 22px; font-weight: bold;'>{format_total(abs(mom_growth))}</div>
-                <div style='font-size: 20px; font-weight: bold; margin-top: 5px;'>{'↑' if mom_growth >= 0 else '↓'} {abs(mom_growth_percentage):.1f}%</div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total PMTD Disbursement</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #8b5cf6;">{format_total(total_pmtd_disbursement)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Total MTD Disbursement</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">MOM Growth (Amount and %)</div>
+                    <div style="font-size: 2rem; font-weight: 900; color: {'#10b981' if mom_growth >= 0 else '#ef4444'};">
+                        {format_total(abs(mom_growth))}
+                    </div>
+                    <div style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); font-weight: 700; margin-top: 0.3rem;">
+                        {'↑' if mom_growth >= 0 else '↓'} {abs(mom_growth_percentage):.1f}%
+                    </div>
+                </div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -732,35 +1033,26 @@ for i in range(0, len(brand_dashboards), 4):
             
             with cols[j]:
                 st.markdown(f"""
-                    <div class='brand-card'>
-                        <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;'>
-                            <h3 style='margin: 0; color: #333; font-size: 18px;'>{brand['name']}</h3>
-                            <span style='font-size: 32px;'>{brand['icon']}</span>
+                    <a href="{brand['url']}" target="_blank">
+                        <div class="brand-card card-{brand['color']}">
+                            <div class="card-header">
+                                <div class="card-label">{brand['name']}</div>
+                                <div class="card-icon">{brand['icon']}</div>
+                            </div>
+                            <div>
+                                <div class="card-description">👤 {brand['description']}</div>
+                                <div class="card-target">🎯 Target: {brand['target']}</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem;">
+                                    <div class="card-metric">📊 {brand['metric_label']}: {metric_value}</div>
+                                    <div class="card-metric">💰 Collection MTD: {collection_value}</div>
+                                </div>
+                                <div style="margin-top: 0.25rem;">
+                                    <div class="card-metric">🎯 Yet to Achieve: {yet_to_achieve_value}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style='margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee;'>
-                            <div style='color: #666; font-size: 13px;'>👤 {brand['description']}</div>
-                        </div>
-                        <div class='metric-row'>
-                            <span style='color: #666; font-size: 13px;'>🎯 Target:</span>
-                            <span style='font-weight: bold; color: #333;'>{brand['target']}</span>
-                        </div>
-                        <div class='metric-row'>
-                            <span style='color: #666; font-size: 13px;'>📊 {brand['metric_label']}:</span>
-                            <span style='font-weight: bold; color: #667eea;'>{metric_value}</span>
-                        </div>
-                        <div class='metric-row'>
-                            <span style='color: #666; font-size: 13px;'>💰 Collection MTD:</span>
-                            <span style='font-weight: bold; color: #28a745;'>{collection_value}</span>
-                        </div>
-                        <div class='metric-row'>
-                            <span style='color: #666; font-size: 13px;'>🎯 Yet to Achieve:</span>
-                            <span style='font-weight: bold; color: #f5576c;'>{yet_to_achieve_value}</span>
-                        </div>
-                        <a href='{brand['url']}' target='_blank' style='display: block; margin-top: 15px; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; transition: transform 0.2s;'>
-                            View Dashboard →
-                        </a>
-                    </div>
-                """, unsafe_allow_html=True)
+                    </a>
+                    """, unsafe_allow_html=True)
     
     # Add spacing between rows
     if i + 4 < len(brand_dashboards):
