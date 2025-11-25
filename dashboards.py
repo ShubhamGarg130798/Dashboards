@@ -908,8 +908,8 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Display summary cards in vertical layout (4 columns)
-cols = st.columns(4, gap="medium")
+# Display summary cards in vertical layout (3 columns)
+cols = st.columns(3, gap="medium")
 
 # Monthly Goal Status Card
 with cols[0]:
@@ -1015,118 +1015,6 @@ with cols[2]:
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-# Projected Month-End Card
-with cols[3]:
-    st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-                    border-radius: 20px; 
-                    padding: 2rem; 
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-                    border: 2px solid rgba(255, 255, 255, 0.1);
-                    height: 380px;
-                    display: flex;
-                    flex-direction: column;">
-            <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
-                🔮 Projected Month-End
-            </div>
-            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
-                <div style="text-align: center;">
-                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Current MTD (Day {current_day})</div>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Projected Month-End</div>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #fbbf24;">{format_total(projected_month_end)}</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Projected Achievement</div>
-                    <div style="font-size: 2rem; font-weight: 900; color: {'#10b981' if projected_achievement_pct >= 100 else '#f59e0b'};">
-                        {projected_achievement_pct:.1f}%
-                    </div>
-                    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-top: 0.3rem;">
-                        vs Target: ₹{total_target} Cr
-                    </div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Prediction Details Expander
-with st.expander("📊 View Detailed Prediction Models", expanded=False):
-    st.markdown("### Multiple Prediction Scenarios")
-    st.markdown(f"**Based on current performance through Day {current_day} of {days_in_month}**")
-    
-    pred_cols = st.columns(4, gap="medium")
-    
-    with pred_cols[0]:
-        st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
-                        border-radius: 16px; 
-                        padding: 1.5rem; 
-                        color: white;
-                        text-align: center;">
-                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">📈 Linear Projection</div>
-                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(linear_projection)}</div>
-                <div style="font-size: 0.85rem; opacity: 0.9;">Constant daily rate</div>
-                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">₹{daily_avg/10000000:.2f} Cr/day</div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with pred_cols[1]:
-        st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-                        border-radius: 16px; 
-                        padding: 1.5rem; 
-                        color: white;
-                        text-align: center;">
-                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🎯 Pattern-Based</div>
-                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(pattern_based_projection)}</div>
-                <div style="font-size: 0.85rem; opacity: 0.9;">Historical pattern</div>
-                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">{achievement_rate*100:.1f}% efficiency</div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with pred_cols[2]:
-        st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
-                        border-radius: 16px; 
-                        padding: 1.5rem; 
-                        color: white;
-                        text-align: center;">
-                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🛡️ Conservative</div>
-                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(conservative_projection)}</div>
-                <div style="font-size: 0.85rem; opacity: 0.9;">80% efficiency</div>
-                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Risk-adjusted</div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with pred_cols[3]:
-        st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); 
-                        border-radius: 16px; 
-                        padding: 1.5rem; 
-                        color: white;
-                        text-align: center;">
-                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🚀 Optimistic</div>
-                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(optimistic_projection)}</div>
-                <div style="font-size: 0.85rem; opacity: 0.9;">100% target rate</div>
-                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Best case scenario</div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    st.markdown("**Methodology:**")
-    st.markdown(f"""
-    - **Linear**: Simple daily average (₹{daily_avg/10000000:.2f} Cr/day) × {days_in_month} days
-    - **Pattern-Based** ⭐ (Primary): Uses your target distribution pattern with current {achievement_rate*100:.1f}% efficiency rate
-    - **Conservative**: Pattern-based with 20% safety margin
-    - **Optimistic**: Assumes 100% achievement of remaining target pattern
-    
-    **Current Status:** {days_left} days remaining | Achievement Rate: {achievement_rate*100:.1f}% of expected pace
-    """)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
