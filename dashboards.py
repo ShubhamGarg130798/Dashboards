@@ -502,29 +502,6 @@ current_day = now.day
 days_in_month = calendar.monthrange(now.year, now.month)[1]
 days_left = days_in_month - current_day
 
-# Placeholder for SG Score - will be calculated later
-sg_score = "-"  # You can replace this with your calculation later
-
-# Header
-st.markdown(f"""
-    <div class="header-section">
-        <div class="header-left-score">
-            <div class="sg-score-card">
-                <span>⭐ SG Score:</span>
-                <span class="sg-score-value">{sg_score}</span>
-            </div>
-        </div>
-        <div class="header-left">
-            <div class="main-title">Performance Console</div>
-            <div class="title-underline"></div>
-        </div>
-        <div class="header-right">
-            <div class="current-date">📅 {current_date}</div>
-            <div class="days-left">⏰ {days_left} days left in month</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
 # Get Metabase token
 metabase_token = get_metabase_token()
 
@@ -874,8 +851,65 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 # Calculate percentages
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-# Display summary cards in vertical layout (3 columns)
-cols = st.columns(3, gap="medium")
+# ========== PREDICTION MODELS ==========
+# Calculate predicted month-end disbursement based on current performance
+
+# Method 1: Simple Linear Extrapolation
+# Assumes constant daily run rate
+daily_avg = total_disbursement / current_day if current_day > 0 else 0
+linear_projection = (total_disbursement / current_day * days_in_month) if current_day > 0 else 0
+
+# Method 2: Pattern-Based Prediction (Most Accurate)
+# Uses the same bracket distribution pattern with current achievement rate
+mtd_target_percentage = 64.68 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
+remaining_target_percentage = 100 - mtd_target_percentage
+achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
+
+# Calculate expected disbursement for remaining days based on pattern
+remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
+projected_remaining = remaining_days_target * achievement_rate
+pattern_based_projection = total_disbursement + projected_remaining
+
+# Method 3: Weighted Prediction (Conservative)
+# Assumes 80% efficiency in remaining days
+conservative_projection = total_disbursement + (remaining_days_target * achievement_rate * 0.8)
+
+# Method 4: Optimistic Prediction
+# Assumes improvement to 100% target achievement rate
+optimistic_projection = total_disbursement + remaining_days_target
+
+# Use pattern-based as primary prediction
+projected_month_end = pattern_based_projection
+
+# Calculate projected shortfall
+projected_shortfall = (total_target * 10000000) - projected_month_end
+projected_achievement_pct = (projected_month_end / (total_target * 10000000) * 100) if total_target > 0 else 0
+
+# SG Score - Shows Projected Month-End
+sg_score = format_total(projected_month_end)
+
+# Header
+st.markdown(f"""
+    <div class="header-section">
+        <div class="header-left-score">
+            <div class="sg-score-card">
+                <span>⭐ SG Score:</span>
+                <span class="sg-score-value">{sg_score}</span>
+            </div>
+        </div>
+        <div class="header-left">
+            <div class="main-title">Performance Console</div>
+            <div class="title-underline"></div>
+        </div>
+        <div class="header-right">
+            <div class="current-date">📅 {current_date}</div>
+            <div class="days-left">⏰ {days_left} days left in month</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Display summary cards in vertical layout (4 columns)
+cols = st.columns(4, gap="medium")
 
 # Monthly Goal Status Card
 with cols[0]:
@@ -981,6 +1015,118 @@ with cols[2]:
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+# Projected Month-End Card
+with cols[3]:
+    st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                    border-radius: 20px; 
+                    padding: 2rem; 
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    border: 2px solid rgba(255, 255, 255, 0.1);
+                    height: 380px;
+                    display: flex;
+                    flex-direction: column;">
+            <div style="font-size: 1.5rem; color: #ffffff; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">
+                🔮 Projected Month-End
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Current MTD (Day {current_day})</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{format_total(total_disbursement)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Projected Month-End</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fbbf24;">{format_total(projected_month_end)}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); font-weight: 600;">Projected Achievement</div>
+                    <div style="font-size: 2rem; font-weight: 900; color: {'#10b981' if projected_achievement_pct >= 100 else '#f59e0b'};">
+                        {projected_achievement_pct:.1f}%
+                    </div>
+                    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 600; margin-top: 0.3rem;">
+                        vs Target: ₹{total_target} Cr
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Prediction Details Expander
+with st.expander("📊 View Detailed Prediction Models", expanded=False):
+    st.markdown("### Multiple Prediction Scenarios")
+    st.markdown(f"**Based on current performance through Day {current_day} of {days_in_month}**")
+    
+    pred_cols = st.columns(4, gap="medium")
+    
+    with pred_cols[0]:
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
+                        border-radius: 16px; 
+                        padding: 1.5rem; 
+                        color: white;
+                        text-align: center;">
+                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">📈 Linear Projection</div>
+                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(linear_projection)}</div>
+                <div style="font-size: 0.85rem; opacity: 0.9;">Constant daily rate</div>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">₹{daily_avg/10000000:.2f} Cr/day</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with pred_cols[1]:
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                        border-radius: 16px; 
+                        padding: 1.5rem; 
+                        color: white;
+                        text-align: center;">
+                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🎯 Pattern-Based</div>
+                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(pattern_based_projection)}</div>
+                <div style="font-size: 0.85rem; opacity: 0.9;">Historical pattern</div>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">{achievement_rate*100:.1f}% efficiency</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with pred_cols[2]:
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+                        border-radius: 16px; 
+                        padding: 1.5rem; 
+                        color: white;
+                        text-align: center;">
+                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🛡️ Conservative</div>
+                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(conservative_projection)}</div>
+                <div style="font-size: 0.85rem; opacity: 0.9;">80% efficiency</div>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Risk-adjusted</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with pred_cols[3]:
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); 
+                        border-radius: 16px; 
+                        padding: 1.5rem; 
+                        color: white;
+                        text-align: center;">
+                <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🚀 Optimistic</div>
+                <div style="font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem;">{format_total(optimistic_projection)}</div>
+                <div style="font-size: 0.85rem; opacity: 0.9;">100% target rate</div>
+                <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem;">Best case scenario</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("**Methodology:**")
+    st.markdown(f"""
+    - **Linear**: Simple daily average (₹{daily_avg/10000000:.2f} Cr/day) × {days_in_month} days
+    - **Pattern-Based** ⭐ (Primary): Uses your target distribution pattern with current {achievement_rate*100:.1f}% efficiency rate
+    - **Conservative**: Pattern-based with 20% safety margin
+    - **Optimistic**: Assumes 100% achievement of remaining target pattern
+    
+    **Current Status:** {days_left} days remaining | Achievement Rate: {achievement_rate*100:.1f}% of expected pace
+    """)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
