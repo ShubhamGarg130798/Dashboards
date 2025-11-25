@@ -851,43 +851,8 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 # Calculate percentages
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-# ========== PREDICTION MODELS ==========
-# Calculate predicted month-end disbursement based on current performance
-
-# Method 1: Simple Linear Extrapolation
-# Assumes constant daily run rate
-daily_avg = total_disbursement / current_day if current_day > 0 else 0
-linear_projection = (total_disbursement / current_day * days_in_month) if current_day > 0 else 0
-
-# Method 2: Pattern-Based Prediction (Most Accurate)
-# Uses the same bracket distribution pattern with current achievement rate
-mtd_target_percentage = 64.68 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
-remaining_target_percentage = 100 - mtd_target_percentage
-achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
-
-# Calculate expected disbursement for remaining days based on pattern
-remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
-projected_remaining = remaining_days_target * achievement_rate
-pattern_based_projection = total_disbursement + projected_remaining
-
-# Method 3: Weighted Prediction (Conservative)
-# Assumes 80% efficiency in remaining days
-conservative_projection = total_disbursement + (remaining_days_target * achievement_rate * 0.8)
-
-# Method 4: Optimistic Prediction
-# Assumes improvement to 100% target achievement rate
-optimistic_projection = total_disbursement + remaining_days_target
-
-# Use pattern-based as primary prediction
-projected_month_end = pattern_based_projection
-
-# Calculate projected shortfall
-projected_shortfall = (total_target * 10000000) - projected_month_end
-projected_achievement_pct = (projected_month_end / (total_target * 10000000) * 100) if total_target > 0 else 0
-
-# SG Score - Shows Projected Month-End
-sg_score = format_total(projected_month_end)
-
+# SG Score - Fixed Value
+sg_score = "₹118.92 Cr"
 
 # Header
 st.markdown(f"""
