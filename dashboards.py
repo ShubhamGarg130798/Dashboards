@@ -886,8 +886,8 @@ projected_shortfall = (total_target * 10000000) - projected_month_end
 projected_achievement_pct = (projected_month_end / (total_target * 10000000) * 100) if total_target > 0 else 0
 
 # SG Score - Shows Projected Month-End
-sg_score = format_total(projected_month_end)
-
+#sg_score = format_total(projected_month_end)
+ sg_score = ₹118.92
 # Header
 st.markdown(f"""
     <div class="header-section">
