@@ -231,11 +231,38 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: relative;
     }
     
     .header-left {
         flex: 1;
         text-align: center;
+    }
+    
+    .header-left-score {
+        position: absolute;
+        left: 3rem;
+        top: 2rem;
+    }
+    
+    .sg-score-card {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #2563eb;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .sg-score-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1e40af;
     }
     
     .header-right {
@@ -435,6 +462,13 @@ st.markdown("""
             gap: 1rem;
         }
         
+        .header-left-score {
+            position: relative;
+            left: auto;
+            top: auto;
+            margin-bottom: 1rem;
+        }
+        
         .header-right {
             position: relative;
             right: auto;
@@ -468,9 +502,18 @@ current_day = now.day
 days_in_month = calendar.monthrange(now.year, now.month)[1]
 days_left = days_in_month - current_day
 
+# Placeholder for SG Score - will be calculated later
+sg_score = "-"  # You can replace this with your calculation later
+
 # Header
 st.markdown(f"""
     <div class="header-section">
+        <div class="header-left-score">
+            <div class="sg-score-card">
+                <span>⭐ SG Score:</span>
+                <span class="sg-score-value">{sg_score}</span>
+            </div>
+        </div>
         <div class="header-left">
             <div class="main-title">Performance Console</div>
             <div class="title-underline"></div>
