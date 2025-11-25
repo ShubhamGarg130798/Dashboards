@@ -24,6 +24,14 @@ if not st.session_state.authenticated:
         st.error("Incorrect password")
     st.stop()
 
+# Set page configuration
+st.set_page_config(
+    page_title="Brand Dashboards",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 # ===== DISBURSEMENT HISTORY TRACKING =====
 HISTORY_FILE = "disbursement_history.json"
 
@@ -32,52 +40,64 @@ def load_disbursement_history():
     if Path(HISTORY_FILE).exists():
         try:
             with open(HISTORY_FILE, 'r') as f:
-                return json.load(f)
-        except:
+                data = json.load(f)
+                return data
+        except Exception as e:
+            st.sidebar.error(f"Error loading history: {str(e)}")
             return {}
     return {}
 
 def save_daily_disbursement(date_str, amount):
     """Save daily disbursement amount"""
     history = load_disbursement_history()
-    history[date_str] = amount
+    history[date_str] = float(amount)  # Ensure it's a float
     
     # Keep only last 60 days
     if len(history) > 60:
         sorted_dates = sorted(history.keys())
         history = {k: history[k] for k in sorted_dates[-60:]}
     
-    with open(HISTORY_FILE, 'w') as f:
-        json.dump(history, f, indent=2)
+    try:
+        with open(HISTORY_FILE, 'w') as f:
+            json.dump(history, f, indent=2)
+    except Exception as e:
+        st.sidebar.error(f"Error saving history: {str(e)}")
 
 def get_previous_day_disbursement(now):
     """Get previous day's disbursement"""
     history = load_disbursement_history()
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    return history.get(yesterday, 0)
+    value = history.get(yesterday, 0)
+    return float(value) if value else 0
 
 def get_previous_day_number(now):
     """Get what day of month it was yesterday"""
     yesterday = now - timedelta(days=1)
     return yesterday.day
 
-# ===== ONE-TIME SETUP - Seed yesterday's data =====
-# Remove this block after first run, or keep it (it won't overwrite existing data)
-if not Path(HISTORY_FILE).exists():
-    history = {
-        "2024-11-25": 733500000  # ₹73.35 Cr from yesterday EOD
-    }
-    with open(HISTORY_FILE, 'w') as f:
-        json.dump(history, f, indent=2)
-# ===== END ONE-TIME SETUP =====
+def initialize_history_file():
+    """Initialize history file with yesterday's data if needed"""
+    history = load_disbursement_history()
+    
+    # Yesterday's date and data
+    yesterday_date = "2024-11-25"
+    yesterday_amount = 733500000  # ₹73.35 Cr from yesterday EOD
+    
+    # Check if yesterday's data exists
+    if yesterday_date not in history:
+        history[yesterday_date] = yesterday_amount
+        try:
+            with open(HISTORY_FILE, 'w') as f:
+                json.dump(history, f, indent=2)
+            return True, "Initialized with yesterday's data"
+        except Exception as e:
+            return False, f"Error: {str(e)}"
+    return False, "Yesterday's data already exists"
 
-# Set page configuration
-st.set_page_config(
-    page_title="Brand Dashboards",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# Initialize history file
+init_status, init_message = initialize_history_file()
+
+# ===== END DISBURSEMENT HISTORY TRACKING =====
 
 # Metabase Configuration
 METABASE_URL = "http://43.205.95.106:3000"
@@ -911,6 +931,16 @@ save_daily_disbursement(today_str, total_disbursement)
 previous_day_disbursement = get_previous_day_disbursement(now)
 previous_day_number = get_previous_day_number(now)
 
+# Debug information
+debug_info = {
+    "Using Yesterday Data": previous_day_disbursement > 0,
+    "Previous Day": previous_day_number,
+    "Previous Disbursement": format_total(previous_day_disbursement) if previous_day_disbursement > 0 else "N/A",
+    "Current Day": current_day,
+    "Current Disbursement": format_total(total_disbursement),
+    "History File Status": init_message
+}
+
 # Check if we have yesterday's data
 if previous_day_disbursement > 0 and previous_day_number > 0:
     # ===== USE YESTERDAY'S DATA (More Accurate) =====
@@ -929,6 +959,8 @@ if previous_day_disbursement > 0 and previous_day_number > 0:
     projected_remaining = remaining_days_target * previous_achievement_rate
     projected_month_end = previous_day_disbursement + projected_remaining
     
+    sg_score_method = "yesterday"
+    
 else:
     # ===== FALLBACK: USE TODAY'S DATA (First day of tracking) =====
     mtd_target_percentage = (calculate_mtd_target(current_day, 100) / 10000000)
@@ -938,9 +970,29 @@ else:
     remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
     projected_remaining = remaining_days_target * achievement_rate
     projected_month_end = total_disbursement + projected_remaining
+    
+    sg_score_method = "today"
 
 # SG Score - Shows Projected Month-End
 sg_score = format_total(projected_month_end)
+
+# ========== DEBUG SIDEBAR (ENABLE TO SEE CALCULATION DETAILS) ==========
+with st.sidebar:
+    st.markdown("### 🔍 SG Score Debug Info")
+    st.markdown(f"**Method Used:** {'✅ Yesterday Data' if sg_score_method == 'yesterday' else '⚠️ Today Data (Fallback)'}")
+    st.markdown("---")
+    
+    for key, value in debug_info.items():
+        st.markdown(f"**{key}:** {value}")
+    
+    st.markdown("---")
+    st.markdown(f"**SG Score:** {sg_score}")
+    st.markdown(f"**Projected Month-End:** {format_total(projected_month_end)}")
+    
+    if sg_score_method == "yesterday":
+        st.success("✅ Using accurate yesterday's data!")
+    else:
+        st.warning("⚠️ Using today's incomplete data. History file needs yesterday's data.")
 
 # Header
 st.markdown(f"""
