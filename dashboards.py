@@ -4,8 +4,6 @@ import calendar
 import requests
 import time
 from zoneinfo import ZoneInfo
-import pandas as pd
-import os
 
 # PASSWORD PROTECTION
 PASSWORD = "nbfcsecure123"
@@ -183,18 +181,12 @@ def parse_metric_value(value_str):
 
 def format_total(value):
     """Format total value"""
-    # Handle negative values
-    is_negative = value < 0
-    abs_value = abs(value)
-    
-    if abs_value >= 10000000:  # 1 Crore
-        formatted = f"₹{abs_value/10000000:.2f} Cr"
-    elif abs_value >= 100000:  # 1 Lakh
-        formatted = f"₹{abs_value/100000:.2f} L"
+    if value >= 10000000:  # 1 Crore
+        return f"₹{value/10000000:.2f} Cr"
+    elif value >= 100000:  # 1 Lakh
+        return f"₹{value/100000:.2f} L"
     else:
-        formatted = f"₹{abs_value:,.0f}"
-    
-    return f"-{formatted}" if is_negative else formatted
+        return f"₹{value:,.0f}"
 
 # Custom CSS for KPI card style
 st.markdown("""
@@ -869,9 +861,7 @@ linear_projection = (total_disbursement / current_day * days_in_month) if curren
 
 # Method 2: Pattern-Based Prediction (Most Accurate)
 # Uses the same bracket distribution pattern with current achievement rate
-# Calculate MTD target percentage dynamically for current day
-current_mtd_target_for_100cr = calculate_mtd_target(current_day, 100)
-mtd_target_percentage = (current_mtd_target_for_100cr / 100000000) * 100  # Convert to percentage
+mtd_target_percentage = 64.68 if current_day == 25 else (calculate_mtd_target(current_day, 100) / 10000000)
 remaining_target_percentage = 100 - mtd_target_percentage
 achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
 
@@ -895,160 +885,8 @@ projected_month_end = pattern_based_projection
 projected_shortfall = (total_target * 10000000) - projected_month_end
 projected_achievement_pct = (projected_month_end / (total_target * 10000000) * 100) if total_target > 0 else 0
 
-# ========== SG SCORE CALCULATION (BASED ON PREVIOUS DAY EOD) ==========
-
-def save_eod_snapshot(date, day_num, mtd_disb):
-    """Save end-of-day MTD snapshot for next day's SG Score calculation"""
-    snapshot_file = 'eod_snapshot.csv'
-    
-    snapshot_data = {
-        'Date': [date],
-        'Day': [day_num],
-        'EOD_MTD': [mtd_disb]
-    }
-    snapshot_df = pd.DataFrame(snapshot_data)
-    
-    if os.path.exists(snapshot_file):
-        try:
-            existing_df = pd.read_csv(snapshot_file)
-            # Check if today's snapshot already exists
-            if date not in existing_df['Date'].values:
-                updated_df = pd.concat([existing_df, snapshot_df], ignore_index=True)
-                updated_df.to_csv(snapshot_file, index=False)
-            else:
-                # Update today's snapshot (in case running multiple times same day)
-                existing_df.loc[existing_df['Date'] == date, 'EOD_MTD'] = mtd_disb
-                existing_df.to_csv(snapshot_file, index=False)
-        except:
-            snapshot_df.to_csv(snapshot_file, index=False)
-    else:
-        snapshot_df.to_csv(snapshot_file, index=False)
-
-def load_previous_day_mtd(current_date, current_day):
-    """Load previous day's EOD MTD for today's SG Score calculation"""
-    snapshot_file = 'eod_snapshot.csv'
-    
-    # Special case: Day 1 of month
-    if current_day == 1:
-        return None  # Will use special handling
-    
-    if os.path.exists(snapshot_file):
-        try:
-            df = pd.read_csv(snapshot_file)
-            if len(df) > 0:
-                # Get the most recent snapshot (should be yesterday)
-                latest_snapshot = df.iloc[-1]
-                return latest_snapshot['EOD_MTD']
-        except:
-            pass
-    
-    # If no previous day data, use current MTD (fallback)
-    return None
-
-# Get previous day's EOD MTD for today's SG Score
-previous_day_mtd = load_previous_day_mtd(now.strftime("%Y-%m-%d"), current_day)
-
-# Calculate SG Score based on previous day's MTD
-if current_day == 1:
-    # Day 1: SG Score = Total Target
-    sg_score_base_mtd = 0
-    sg_projected_month_end = total_target * 10000000
-    sg_achievement_rate = 0
-    sg_score_label = "Month Start - Full Target"
-elif previous_day_mtd is not None:
-    # Use yesterday's EOD MTD for today's projection
-    sg_score_base_mtd = previous_day_mtd
-    
-    # Calculate MTD target for yesterday (current_day - 1)
-    yesterday_mtd_target = calculate_mtd_target(current_day - 1, total_target)
-    achievement_rate_yesterday = (previous_day_mtd / yesterday_mtd_target) if yesterday_mtd_target > 0 else 0
-    
-    # Calculate remaining target from yesterday to month-end
-    current_mtd_target_for_100cr = calculate_mtd_target(current_day - 1, 100)
-    mtd_target_percentage_yesterday = (current_mtd_target_for_100cr / 100000000) * 100
-    remaining_target_percentage = 100 - mtd_target_percentage_yesterday
-    
-    # Calculate projection
-    remaining_days_target_sg = (total_target * 10000000) * (remaining_target_percentage / 100)
-    projected_remaining_sg = remaining_days_target_sg * achievement_rate_yesterday
-    sg_projected_month_end = previous_day_mtd + projected_remaining_sg
-    sg_achievement_rate = achievement_rate_yesterday
-    sg_score_label = f"Based on Day {current_day-1} EOD"
-else:
-    # Fallback: Use already-calculated pattern-based projection
-    sg_score_base_mtd = total_disbursement
-    sg_projected_month_end = pattern_based_projection  # Use pre-calculated value
-    sg_achievement_rate = achievement_rate  # Use pre-calculated value
-    sg_score_label = "Live (No Previous Data)"
-
-# Format SG Score for display
-sg_score = format_total(sg_projected_month_end)
-
-# Save today's EOD snapshot for tomorrow's calculation
-save_eod_snapshot(
-    date=now.strftime("%Y-%m-%d"),
-    day_num=current_day,
-    mtd_disb=total_disbursement
-)
-
-# ========== SG SCORE HISTORY TRACKING ==========
-def save_sg_score_history(date, day_num, base_mtd, sg_score_value, achievement_rate, target, label):
-    """Save daily SG Score snapshot to CSV file"""
-    history_file = 'sg_score_history.csv'
-    
-    current_data = {
-        'Date': [date],
-        'Day': [day_num],
-        'Base_MTD': [base_mtd],
-        'Current_MTD': [total_disbursement],
-        'SG_Score': [sg_score_value],
-        'Achievement_Rate': [achievement_rate * 100],
-        'Monthly_Target': [target],
-        'Basis': [label]
-    }
-    current_df = pd.DataFrame(current_data)
-    
-    if os.path.exists(history_file):
-        try:
-            existing_df = pd.read_csv(history_file)
-            if date not in existing_df['Date'].values:
-                updated_df = pd.concat([existing_df, current_df], ignore_index=True)
-                updated_df.to_csv(history_file, index=False)
-            else:
-                # Update if running multiple times same day
-                mask = existing_df['Date'] == date
-                for col in current_df.columns:
-                    existing_df.loc[mask, col] = current_df[col].values[0]
-                existing_df.to_csv(history_file, index=False)
-        except:
-            current_df.to_csv(history_file, index=False)
-    else:
-        current_df.to_csv(history_file, index=False)
-
-def load_sg_score_history():
-    """Load historical SG Score data"""
-    history_file = 'sg_score_history.csv'
-    if os.path.exists(history_file):
-        try:
-            df = pd.read_csv(history_file)
-            return df
-        except:
-            return None
-    return None
-
-# Save today's SG Score snapshot
-save_sg_score_history(
-    date=now.strftime("%Y-%m-%d"),
-    day_num=current_day,
-    base_mtd=sg_score_base_mtd,
-    sg_score_value=sg_projected_month_end,
-    achievement_rate=sg_achievement_rate,
-    target=total_target * 10000000,
-    label=sg_score_label
-)
-
-# Load history for display
-sg_history_df = load_sg_score_history()
+# SG Score - Shows Projected Month-End
+sg_score = format_total(projected_month_end)
 
 # Header
 st.markdown(f"""
@@ -1057,9 +895,6 @@ st.markdown(f"""
             <div class="sg-score-card">
                 <span>⭐ SG Score:</span>
                 <span class="sg-score-value">{sg_score}</span>
-            </div>
-            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; text-align: center; font-weight: 600;">
-                {sg_score_label}
             </div>
         </div>
         <div class="header-left">
@@ -1180,81 +1015,6 @@ with cols[2]:
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# ========== SG SCORE HISTORY SECTION ==========
-if sg_history_df is not None and len(sg_history_df) > 0:
-    with st.expander("📈 SG Score History - Daily Trend", expanded=False):
-        st.markdown("### SG Score Progression Over Time")
-        st.markdown(f"**Tracking your month-end projections based on previous day's EOD**")
-        
-        # Format the dataframe for display
-        display_df = sg_history_df.copy()
-        display_df['Base_MTD'] = display_df['Base_MTD'].apply(lambda x: format_total(x))
-        display_df['Current_MTD'] = display_df['Current_MTD'].apply(lambda x: format_total(x))
-        display_df['SG_Score'] = display_df['SG_Score'].apply(lambda x: format_total(x))
-        display_df['Achievement_Rate'] = display_df['Achievement_Rate'].apply(lambda x: f"{x:.1f}%")
-        display_df['Monthly_Target'] = display_df['Monthly_Target'].apply(lambda x: format_total(x))
-        
-        # Rename columns for better display
-        display_df = display_df.rename(columns={
-            'Date': '📅 Date',
-            'Day': '📆 Day',
-            'Base_MTD': '📊 Base MTD',
-            'Current_MTD': '💰 Current MTD',
-            'SG_Score': '⭐ SG Score',
-            'Achievement_Rate': '📈 Achievement %',
-            'Monthly_Target': '🎯 Target',
-            'Basis': '📝 Basis'
-        })
-        
-        # Show the table
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
-        
-        # Show trend insights
-        if len(sg_history_df) > 1:
-            latest_sg = sg_history_df.iloc[-1]['SG_Score']
-            previous_sg = sg_history_df.iloc[-2]['SG_Score']
-            sg_change = latest_sg - previous_sg
-            
-            st.markdown("---")
-            st.markdown("**📊 Trend Analysis:**")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric(
-                    label="Today's SG Score",
-                    value=format_total(latest_sg),
-                    delta=format_total(sg_change)
-                )
-            
-            with col2:
-                latest_achievement = sg_history_df.iloc[-1]['Achievement_Rate']
-                if len(sg_history_df) > 1:
-                    prev_achievement = sg_history_df.iloc[-2]['Achievement_Rate']
-                    achievement_change = latest_achievement - prev_achievement
-                    st.metric(
-                        label="Achievement Rate",
-                        value=f"{latest_achievement:.1f}%",
-                        delta=f"{achievement_change:+.1f}%"
-                    )
-                else:
-                    st.metric(
-                        label="Achievement Rate",
-                        value=f"{latest_achievement:.1f}%"
-                    )
-            
-            with col3:
-                days_tracked = len(sg_history_df)
-                st.metric(
-                    label="Days Tracked",
-                    value=days_tracked
-                )
-        
-        st.markdown("---")
-        st.markdown("**ℹ️ Note:** SG Score on each day is calculated using the **previous day's end-of-day MTD**, so it remains stable throughout the current day.")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
