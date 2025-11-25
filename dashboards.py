@@ -183,12 +183,18 @@ def parse_metric_value(value_str):
 
 def format_total(value):
     """Format total value"""
-    if value >= 10000000:  # 1 Crore
-        return f"₹{value/10000000:.2f} Cr"
-    elif value >= 100000:  # 1 Lakh
-        return f"₹{value/100000:.2f} L"
+    # Handle negative values
+    is_negative = value < 0
+    abs_value = abs(value)
+    
+    if abs_value >= 10000000:  # 1 Crore
+        formatted = f"₹{abs_value/10000000:.2f} Cr"
+    elif abs_value >= 100000:  # 1 Lakh
+        formatted = f"₹{abs_value/100000:.2f} L"
     else:
-        return f"₹{value:,.0f}"
+        formatted = f"₹{abs_value:,.0f}"
+    
+    return f"-{formatted}" if is_negative else formatted
 
 # Custom CSS for KPI card style
 st.markdown("""
@@ -946,8 +952,8 @@ previous_day_mtd = load_previous_day_mtd(now.strftime("%Y-%m-%d"), current_day)
 if current_day == 1:
     # Day 1: SG Score = Total Target
     sg_score_base_mtd = 0
-    projected_month_end = total_target * 10000000
-    achievement_rate = 0
+    sg_projected_month_end = total_target * 10000000
+    sg_achievement_rate = 0
     sg_score_label = "Month Start - Full Target"
 elif previous_day_mtd is not None:
     # Use yesterday's EOD MTD for today's projection
@@ -963,27 +969,20 @@ elif previous_day_mtd is not None:
     remaining_target_percentage = 100 - mtd_target_percentage_yesterday
     
     # Calculate projection
-    remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
-    projected_remaining = remaining_days_target * achievement_rate_yesterday
-    projected_month_end = previous_day_mtd + projected_remaining
-    achievement_rate = achievement_rate_yesterday
+    remaining_days_target_sg = (total_target * 10000000) * (remaining_target_percentage / 100)
+    projected_remaining_sg = remaining_days_target_sg * achievement_rate_yesterday
+    sg_projected_month_end = previous_day_mtd + projected_remaining_sg
+    sg_achievement_rate = achievement_rate_yesterday
     sg_score_label = f"Based on Day {current_day-1} EOD"
 else:
-    # Fallback: Use current live MTD (for first run or missing data)
+    # Fallback: Use already-calculated pattern-based projection
     sg_score_base_mtd = total_disbursement
-    
-    current_mtd_target_for_100cr = calculate_mtd_target(current_day, 100)
-    mtd_target_percentage = (current_mtd_target_for_100cr / 100000000) * 100
-    remaining_target_percentage = 100 - mtd_target_percentage
-    achievement_rate = (total_disbursement / mtd_target_amount) if mtd_target_amount > 0 else 0
-    
-    remaining_days_target = (total_target * 10000000) * (remaining_target_percentage / 100)
-    projected_remaining = remaining_days_target * achievement_rate
-    projected_month_end = total_disbursement + projected_remaining
+    sg_projected_month_end = pattern_based_projection  # Use pre-calculated value
+    sg_achievement_rate = achievement_rate  # Use pre-calculated value
     sg_score_label = "Live (No Previous Data)"
 
 # Format SG Score for display
-sg_score = format_total(projected_month_end)
+sg_score = format_total(sg_projected_month_end)
 
 # Save today's EOD snapshot for tomorrow's calculation
 save_eod_snapshot(
@@ -1042,8 +1041,8 @@ save_sg_score_history(
     date=now.strftime("%Y-%m-%d"),
     day_num=current_day,
     base_mtd=sg_score_base_mtd,
-    sg_score_value=projected_month_end,
-    achievement_rate=achievement_rate,
+    sg_score_value=sg_projected_month_end,
+    achievement_rate=sg_achievement_rate,
     target=total_target * 10000000,
     label=sg_score_label
 )
