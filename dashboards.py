@@ -699,6 +699,19 @@ brand_dashboards = [
         "color": "green"
     },
     {
+        "name": "Udhaar Portal",
+        "url": "https://tinyurl.com/wb6n38dx",
+        "icon": "🏦",
+        "description": "Manas",
+        "target": "₹1 Cr",
+        "target_value": 1,
+        "metabase_card_id": 498,
+        "pmtd_card_id": 500,
+        "collection_card_id": 499,
+        "metric_label": "MTD Disb",
+        "color": "teal"
+    },
+    {
         "name": "Rupee Hype",
         "url": "https://tinyurl.com/39ztaew8",
         "icon": "🚀",
