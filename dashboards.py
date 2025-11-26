@@ -852,7 +852,7 @@ mtd_shortfall = mtd_target_amount - total_disbursement
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
 # SG Score - Fixed Value
-sg_score = "₹137 Cr"
+sg_score = "₹136 Cr"
 
 # Header
 st.markdown(f"""
