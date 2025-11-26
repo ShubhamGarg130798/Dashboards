@@ -722,7 +722,7 @@ brand_dashboards = [
     "color": "blue",
     "manual_mtd": 24970000,  # 6.19 Cr in rupees
     "manual_pmtd": 1.3400000,  # 4.53 Cr in rupees
-    "manual_collection": "83.0%"
+    "manual_collection": "74.0%"
 },
     {
         "name": "Salary 4 You",
