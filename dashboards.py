@@ -549,7 +549,7 @@ brand_dashboards = [
     },
     {
         "name": "BlinkR",
-        "url": "https:",  # Add actual URL when available
+        "url": "",  # Add actual URL when available
         "icon": "⚡",
         "description": "Anurag",
         "target": "₹15 Cr",
