@@ -721,7 +721,7 @@ brand_dashboards = [
     "metric_label": "MTD Disb",
     "color": "blue",
     "manual_mtd": 24970000,  # 6.19 Cr in rupees
-    "manual_pmtd": 1.3400000,  # 4.53 Cr in rupees
+    "manual_pmtd": 13400000,  # 4.53 Cr in rupees
     "manual_collection": "74.0%"
 },
     {
