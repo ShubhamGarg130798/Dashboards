@@ -548,6 +548,22 @@ brand_dashboards = [
         "color": "purple"
     },
     {
+        "name": "BlinkR",
+        "url": "https://tinyurl.com/",  # Add actual URL when available
+        "icon": "⚡",
+        "description": "Anurag",
+        "target": "₹15 Cr",
+        "target_value": 15,
+        "metabase_card_id": None,  # Manual entry
+        "pmtd_card_id": None,  # Manual entry
+        "collection_card_id": None,  # Manual entry
+        "metric_label": "MTD Disb",
+        "color": "indigo",
+        "manual_mtd": 61900000,  # 6.19 Cr in rupees
+        "manual_pmtd": 45300000,  # 4.53 Cr in rupees
+        "manual_collection": "83.0%"
+    },
+    {
         "name": "Duniya",
         "url": "https://tinyurl.com/nhzvpuy6",
         "icon": "🌍",
@@ -755,22 +771,15 @@ brand_collections = {}
 brand_yet_to_achieve = {}
 
 for brand in brand_dashboards:
-    # Fetch MTD Disbursement
-    if brand['metabase_card_id']:
-        metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
-        mtd_disb_value = parse_metric_value(metric_value)
-        
-        # Add secondary MTD card if exists (for Zepto Finance)
-        if brand.get('secondary_mtd_card_id'):
-            secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
-            mtd_disb_value += parse_metric_value(secondary_metric_value)
-        
-        # Store the combined formatted value for display
+    # Check if this is a manual entry brand (BlinkR)
+    if brand.get('manual_mtd') is not None:
+        # Use manual values for BlinkR
+        mtd_disb_value = brand['manual_mtd']
         brand_metrics[brand['name']] = format_total(mtd_disb_value)
         total_disbursement += mtd_disb_value
         
-        # Calculate Yet to Achieve
-        target_value = brand['target_value'] * 10000000  # Convert Cr to rupees
+        # Calculate Yet to Achieve for manual entry
+        target_value = brand['target_value'] * 10000000
         yet_to_achieve = target_value - mtd_disb_value
         yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
         
@@ -778,32 +787,71 @@ for brand in brand_dashboards:
             brand_yet_to_achieve[brand['name']] = f"{format_total(yet_to_achieve)} ({yet_to_achieve_pct:.0f}%)"
         else:
             brand_yet_to_achieve[brand['name']] = "Target Achieved! 🎉"
-    else:
-        brand_metrics[brand['name']] = "Coming Soon"
-        brand_yet_to_achieve[brand['name']] = "N/A"
-    
-    # Fetch PMTD Disbursement
-    if brand['pmtd_card_id']:
-        pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
-        pmtd_disb_value = parse_metric_value(pmtd_value)
         
-        # Add secondary PMTD card if exists (for Zepto Finance)
-        if brand.get('secondary_pmtd_card_id'):
-            secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
-            pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
+        # PMTD for manual entry
+        if brand.get('manual_pmtd') is not None:
+            pmtd_disb_value = brand['manual_pmtd']
+            brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
+            total_pmtd_disbursement += pmtd_disb_value
+        else:
+            brand_pmtd_metrics[brand['name']] = "Coming Soon"
         
-        # Store the combined formatted value for display
-        brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
-        total_pmtd_disbursement += pmtd_disb_value
-    else:
-        brand_pmtd_metrics[brand['name']] = "Coming Soon"
+        # Collection for manual entry
+        if brand.get('manual_collection') is not None:
+            brand_collections[brand['name']] = brand['manual_collection']
+        else:
+            brand_collections[brand['name']] = "N/A"
     
-    # Fetch Collection %
-    if brand['collection_card_id']:
-        collection_value = fetch_collection_percentage(brand['collection_card_id'], metabase_token)
-        brand_collections[brand['name']] = collection_value
     else:
-        brand_collections[brand['name']] = "N/A"
+        # Fetch MTD Disbursement from Metabase
+        if brand['metabase_card_id']:
+            metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
+            mtd_disb_value = parse_metric_value(metric_value)
+            
+            # Add secondary MTD card if exists (for Zepto Finance)
+            if brand.get('secondary_mtd_card_id'):
+                secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
+                mtd_disb_value += parse_metric_value(secondary_metric_value)
+            
+            # Store the combined formatted value for display
+            brand_metrics[brand['name']] = format_total(mtd_disb_value)
+            total_disbursement += mtd_disb_value
+            
+            # Calculate Yet to Achieve
+            target_value = brand['target_value'] * 10000000  # Convert Cr to rupees
+            yet_to_achieve = target_value - mtd_disb_value
+            yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
+            
+            if yet_to_achieve > 0:
+                brand_yet_to_achieve[brand['name']] = f"{format_total(yet_to_achieve)} ({yet_to_achieve_pct:.0f}%)"
+            else:
+                brand_yet_to_achieve[brand['name']] = "Target Achieved! 🎉"
+        else:
+            brand_metrics[brand['name']] = "Coming Soon"
+            brand_yet_to_achieve[brand['name']] = "N/A"
+        
+        # Fetch PMTD Disbursement
+        if brand['pmtd_card_id']:
+            pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
+            pmtd_disb_value = parse_metric_value(pmtd_value)
+            
+            # Add secondary PMTD card if exists (for Zepto Finance)
+            if brand.get('secondary_pmtd_card_id'):
+                secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
+                pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
+            
+            # Store the combined formatted value for display
+            brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
+            total_pmtd_disbursement += pmtd_disb_value
+        else:
+            brand_pmtd_metrics[brand['name']] = "Coming Soon"
+        
+        # Fetch Collection %
+        if brand['collection_card_id']:
+            collection_value = fetch_collection_percentage(brand['collection_card_id'], metabase_token)
+            brand_collections[brand['name']] = collection_value
+        else:
+            brand_collections[brand['name']] = "N/A"
 
 # Calculate total target
 total_target = sum([brand['target_value'] for brand in brand_dashboards])
