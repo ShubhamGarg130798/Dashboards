@@ -910,7 +910,7 @@ st.markdown(f"""
     <div class="header-section">
         <div class="header-left-score">
             <div class="sg-score-card">
-                <span>⭐ Projected Monthend Score:</span>
+                <span>⭐ Month-End Projection:</span>
                 <span class="sg-score-value">{sg_score}</span>
             </div>
         </div>
