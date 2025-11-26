@@ -549,7 +549,7 @@ brand_dashboards = [
     },
     {
         "name": "BlinkR",
-        "url": "https://tinyurl.com/",  # Add actual URL when available
+        "url": "https:",  # Add actual URL when available
         "icon": "⚡",
         "description": "Anurag",
         "target": "₹15 Cr",
@@ -709,18 +709,21 @@ brand_dashboards = [
         "color": "pink"
     },
     {
-        "name": "Qua Loans",
-        "url": "https://tinyurl.com/bdhj328e",
-        "icon": "🔷",
-        "description": "Harsha & Nitin",
-        "target": "₹3 Cr",
-        "target_value": 3,
-        "metabase_card_id": 479,
-        "pmtd_card_id": 480,
-        "collection_card_id": None,
-        "metric_label": "MTD Disb",
-        "color": "blue"
-    },
+    "name": "Qua Loans",
+    "url": "https://tinyurl.com/bdhj328e",
+    "icon": "🔷",
+    "description": "Harsha & Nitin",
+    "target": "₹3 Cr",
+    "target_value": 3,
+    "metabase_card_id": None,
+    "pmtd_card_id": None,
+    "collection_card_id": None,
+    "metric_label": "MTD Disb",
+    "color": "blue",
+    "manual_mtd": 24970000,  # 6.19 Cr in rupees
+    "manual_pmtd": 1.3400000,  # 4.53 Cr in rupees
+    "manual_collection": "83.0%"
+},
     {
         "name": "Salary 4 You",
         "url": "https://tinyurl.com/p43ptyp4",
