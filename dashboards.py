@@ -1,20 +1,94 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 import requests
 import time
 from zoneinfo import ZoneInfo
+import hashlib
+import json
+import os
 
 # PASSWORD PROTECTION
 PASSWORD = "nbfcsecure123"
+TOKEN_FILE = "auth_tokens.json"
+
+# Token management functions
+def generate_token():
+    """Generate a secure token"""
+    timestamp = str(datetime.now().timestamp())
+    random_str = os.urandom(16).hex()
+    return hashlib.sha256((timestamp + random_str).encode()).hexdigest()
+
+def save_token(token):
+    """Save token with expiry date"""
+    tokens = load_tokens()
+    expiry = (datetime.now() + timedelta(days=10)).isoformat()
+    tokens[token] = expiry
+    with open(TOKEN_FILE, 'w') as f:
+        json.dump(tokens, f)
+
+def load_tokens():
+    """Load existing tokens"""
+    if os.path.exists(TOKEN_FILE):
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def validate_token(token):
+    """Check if token is valid and not expired"""
+    if not token:
+        return False
+    tokens = load_tokens()
+    if token in tokens:
+        try:
+            expiry = datetime.fromisoformat(tokens[token])
+            if datetime.now() < expiry:
+                return True
+            else:
+                # Remove expired token
+                del tokens[token]
+                with open(TOKEN_FILE, 'w') as f:
+                    json.dump(tokens, f)
+        except:
+            pass
+    return False
+
+def clean_expired_tokens():
+    """Remove all expired tokens"""
+    tokens = load_tokens()
+    now = datetime.now()
+    tokens = {k: v for k, v in tokens.items() 
+              if datetime.fromisoformat(v) > now}
+    with open(TOKEN_FILE, 'w') as f:
+        json.dump(tokens, f)
+
+# Clean expired tokens periodically
+clean_expired_tokens()
+
+# Check for token in query parameters
+query_params = st.query_params
+auth_token = query_params.get("auth_token", None)
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
+# Validate token if present
+if auth_token and validate_token(auth_token):
+    st.session_state.authenticated = True
+
+# Password authentication
 if not st.session_state.authenticated:
     password = st.text_input("Enter password to access dashboard:", type="password")
     if password == PASSWORD:
         st.session_state.authenticated = True
+        # Generate and save token
+        new_token = generate_token()
+        save_token(new_token)
+        # Set token in query params
+        st.query_params["auth_token"] = new_token
         st.success("Access granted. Welcome!")
         st.rerun()
     elif password:
