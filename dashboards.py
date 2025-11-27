@@ -988,7 +988,7 @@ mtd_target_amount = calculate_mtd_target(current_day, total_target)
 mtd_shortfall = mtd_target_amount - total_disbursement
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-sg_score = "₹137 Cr"
+sg_score = "₹138 Cr"
 
 # Header
 st.markdown(f"""
