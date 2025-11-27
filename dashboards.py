@@ -125,8 +125,10 @@ def get_metabase_token():
             token = response.json()['id']
             return token
         else:
+            st.sidebar.error(f"Metabase auth failed: {response.status_code}")
             return None
     except Exception as e:
+        st.sidebar.error(f"Metabase connection error: {str(e)}")
         return None
 
 # Function to fetch data from Metabase
@@ -184,7 +186,7 @@ def fetch_metabase_metric_v2(card_id, token):
         return f"Error {response.status_code}"
             
     except Exception as e:
-        return "Error"
+        return f"Error: {str(e)[:20]}"
 
 # Function to fetch collection percentage
 @st.cache_data(ttl=300)  # Cache for 5 minutes
@@ -567,8 +569,6 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Get current date and calculate days left in month
-# Force fresh calculation every time - don't cache this
-# Use IST timezone explicitly
 ist_timezone = ZoneInfo("Asia/Kolkata")
 now = datetime.now(ist_timezone)
 current_date = now.strftime("%d %B %Y")
@@ -579,8 +579,21 @@ days_left = days_in_month - current_day
 # Get Metabase token
 metabase_token = get_metabase_token()
 
+# Add debug info in sidebar
+with st.sidebar:
+    st.markdown("### 🔧 Debug Info")
+    if metabase_token:
+        st.success("✅ Metabase Connected")
+    else:
+        st.error("❌ Metabase Connection Failed")
+        st.info("Check credentials and server")
+    
+    # Add refresh button
+    if st.button("🔄 Refresh Data"):
+        st.cache_data.clear()
+        st.rerun()
+
 # Define brand dashboards with colors and Metabase card IDs
-# Sorted by target in decreasing order
 brand_dashboards = [
     {
         "name": "FundoBaBa",
@@ -623,18 +636,18 @@ brand_dashboards = [
     },
     {
         "name": "BlinkR",
-        "url": "",  # Add actual URL when available
+        "url": "",
         "icon": "⚡",
         "description": "Anurag",
         "target": "₹15 Cr",
         "target_value": 15,
-        "metabase_card_id": None,  # Manual entry
-        "pmtd_card_id": None,  # Manual entry
-        "collection_card_id": None,  # Manual entry
+        "metabase_card_id": None,
+        "pmtd_card_id": None,
+        "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "indigo",
-        "manual_mtd": 65049130,  # 6.19 Cr in rupees
-        "manual_pmtd": 49800000,  # 4.53 Cr in rupees
+        "manual_mtd": 65049130,
+        "manual_pmtd": 49800000,
         "manual_collection": "83.0%"
     },
     {
@@ -783,21 +796,21 @@ brand_dashboards = [
         "color": "pink"
     },
     {
-    "name": "Qua Loans",
-    "url": "https://tinyurl.com/bdhj328e",
-    "icon": "🔷",
-    "description": "Harsha & Nitin",
-    "target": "₹3 Cr",
-    "target_value": 3,
-    "metabase_card_id": None,
-    "pmtd_card_id": None,
-    "collection_card_id": None,
-    "metric_label": "MTD Disb",
-    "color": "blue",
-    "manual_mtd": 26458000,  # 6.19 Cr in rupees
-    "manual_pmtd": 14700000,  # 4.53 Cr in rupees
-    "manual_collection": "74.0%"
-},
+        "name": "Qua Loans",
+        "url": "https://tinyurl.com/bdhj328e",
+        "icon": "🔷",
+        "description": "Harsha & Nitin",
+        "target": "₹3 Cr",
+        "target_value": 3,
+        "metabase_card_id": None,
+        "pmtd_card_id": None,
+        "collection_card_id": None,
+        "metric_label": "MTD Disb",
+        "color": "blue",
+        "manual_mtd": 26458000,
+        "manual_pmtd": 14700000,
+        "manual_collection": "74.0%"
+    },
     {
         "name": "Salary 4 You",
         "url": "https://tinyurl.com/p43ptyp4",
@@ -839,6 +852,10 @@ brand_dashboards = [
     }
 ]
 
+# Show loading progress
+progress_text = "Loading brand metrics..."
+progress_bar = st.progress(0, text=progress_text)
+
 # Fetch all metrics and calculate totals
 total_disbursement = 0
 total_pmtd_disbursement = 0
@@ -847,15 +864,18 @@ brand_pmtd_metrics = {}
 brand_collections = {}
 brand_yet_to_achieve = {}
 
-for brand in brand_dashboards:
-    # Check if this is a manual entry brand (BlinkR)
+for idx, brand in enumerate(brand_dashboards):
+    # Update progress
+    progress = (idx + 1) / len(brand_dashboards)
+    progress_bar.progress(progress, text=f"Loading {brand['name']}...")
+    
+    # Check if this is a manual entry brand
     if brand.get('manual_mtd') is not None:
-        # Use manual values for BlinkR
         mtd_disb_value = brand['manual_mtd']
         brand_metrics[brand['name']] = format_total(mtd_disb_value)
         total_disbursement += mtd_disb_value
         
-        # Calculate Yet to Achieve for manual entry
+        # Calculate Yet to Achieve
         target_value = brand['target_value'] * 10000000
         yet_to_achieve = target_value - mtd_disb_value
         yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
@@ -885,17 +905,16 @@ for brand in brand_dashboards:
             metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
             mtd_disb_value = parse_metric_value(metric_value)
             
-            # Add secondary MTD card if exists (for Zepto Finance)
+            # Add secondary MTD card if exists
             if brand.get('secondary_mtd_card_id'):
                 secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
                 mtd_disb_value += parse_metric_value(secondary_metric_value)
             
-            # Store the combined formatted value for display
             brand_metrics[brand['name']] = format_total(mtd_disb_value)
             total_disbursement += mtd_disb_value
             
             # Calculate Yet to Achieve
-            target_value = brand['target_value'] * 10000000  # Convert Cr to rupees
+            target_value = brand['target_value'] * 10000000
             yet_to_achieve = target_value - mtd_disb_value
             yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
             
@@ -912,12 +931,10 @@ for brand in brand_dashboards:
             pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
             pmtd_disb_value = parse_metric_value(pmtd_value)
             
-            # Add secondary PMTD card if exists (for Zepto Finance)
             if brand.get('secondary_pmtd_card_id'):
                 secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
                 pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
             
-            # Store the combined formatted value for display
             brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
             total_pmtd_disbursement += pmtd_disb_value
         else:
@@ -930,6 +947,9 @@ for brand in brand_dashboards:
         else:
             brand_collections[brand['name']] = "N/A"
 
+# Clear progress bar
+progress_bar.empty()
+
 # Calculate total target
 total_target = sum([brand['target_value'] for brand in brand_dashboards])
 
@@ -940,29 +960,23 @@ mom_growth_percentage = (mom_growth / total_pmtd_disbursement * 100) if total_pm
 # Calculate Total MTD Target based on current day
 def calculate_mtd_target(current_day, total_target_cr):
     """Calculate MTD Target based on the day of month"""
-    total_target_amount = total_target_cr * 10000000  # Convert to rupees
+    total_target_amount = total_target_cr * 10000000
     
     if 1 <= current_day <= 5:
-        # 21.83% distributed over 5 days
         mtd_percentage = 21.23 * (current_day / 5) / 100
     elif 6 <= current_day <= 10:
-        # 21.83% from days 1-5 + 12.21% distributed from day 6-10
         days_in_bracket = current_day - 5
         mtd_percentage = (21.23 + 11.61 * (days_in_bracket / 5)) / 100
     elif 11 <= current_day <= 15:
-        # Previous brackets + 8.73% distributed from day 11-15
         days_in_bracket = current_day - 10
         mtd_percentage = (21.23 + 11.61 + 8.13 * (days_in_bracket / 5)) / 100
     elif 16 <= current_day <= 20:
-        # Previous brackets + 8.35% distributed from day 16-20
         days_in_bracket = current_day - 15
         mtd_percentage = (21.23 + 11.61 + 8.13 + 7.75 * (days_in_bracket / 5)) / 100
     elif 21 <= current_day <= 25:
-        # Previous brackets + 13.56% distributed from day 21-25
         days_in_bracket = current_day - 20
         mtd_percentage = (21.23 + 11.61 + 8.13 + 7.75 + 12.96 * (days_in_bracket / 5)) / 100
-    else:  # 26-30/31
-        # Previous brackets + 35.31% distributed from day 26 onwards
+    else:
         days_in_month = calendar.monthrange(now.year, now.month)[1]
         days_in_bracket = current_day - 25
         total_days_in_bracket = days_in_month - 25
@@ -972,11 +986,8 @@ def calculate_mtd_target(current_day, total_target_cr):
 
 mtd_target_amount = calculate_mtd_target(current_day, total_target)
 mtd_shortfall = mtd_target_amount - total_disbursement
-
-# Calculate percentages
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-# SG Score - Fixed Value
 sg_score = "₹137 Cr"
 
 # Header
@@ -999,10 +1010,9 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# Display summary cards in vertical layout (3 columns)
+# Display summary cards
 cols = st.columns(3, gap="medium")
 
-# Monthly Goal Status Card
 with cols[0]:
     st.markdown(f"""
         <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
@@ -1035,7 +1045,6 @@ with cols[0]:
         </div>
         """, unsafe_allow_html=True)
 
-# Monthly Shortfall Card
 with cols[1]:
     st.markdown(f"""
         <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
@@ -1071,7 +1080,6 @@ with cols[1]:
         </div>
         """, unsafe_allow_html=True)
 
-# MoM Growth Card
 with cols[2]:
     st.markdown(f"""
         <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
@@ -1109,7 +1117,7 @@ with cols[2]:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Create brand cards in rows of 4
+# Create brand cards
 for i in range(0, len(brand_dashboards), 4):
     cols = st.columns(4, gap="large")
     
@@ -1117,7 +1125,6 @@ for i in range(0, len(brand_dashboards), 4):
         if i + j < len(brand_dashboards):
             brand = brand_dashboards[i + j]
             
-            # Use pre-fetched metric values
             metric_value = brand_metrics.get(brand['name'], "Coming Soon")
             collection_value = brand_collections.get(brand['name'], "N/A")
             yet_to_achieve_value = brand_yet_to_achieve.get(brand['name'], "N/A")
@@ -1145,6 +1152,5 @@ for i in range(0, len(brand_dashboards), 4):
                     </a>
                     """, unsafe_allow_html=True)
     
-    # Add spacing between rows
     if i + 4 < len(brand_dashboards):
         st.markdown("<br>", unsafe_allow_html=True)
