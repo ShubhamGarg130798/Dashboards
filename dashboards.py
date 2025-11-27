@@ -764,7 +764,7 @@ brand_dashboards = [
         "target": "₹3 Cr",
         "target_value": 3,
         "metabase_card_id": 470,
-        "pmtd_card_id": None,
+        "pmtd_card_id": 471,
         "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "indigo"
