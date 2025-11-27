@@ -633,8 +633,8 @@ brand_dashboards = [
         "collection_card_id": None,  # Manual entry
         "metric_label": "MTD Disb",
         "color": "indigo",
-        "manual_mtd": 61900000,  # 6.19 Cr in rupees
-        "manual_pmtd": 45300000,  # 4.53 Cr in rupees
+        "manual_mtd": 65049130,  # 6.19 Cr in rupees
+        "manual_pmtd": 49800000,  # 4.53 Cr in rupees
         "manual_collection": "83.0%"
     },
     {
@@ -794,8 +794,8 @@ brand_dashboards = [
     "collection_card_id": None,
     "metric_label": "MTD Disb",
     "color": "blue",
-    "manual_mtd": 24970000,  # 6.19 Cr in rupees
-    "manual_pmtd": 13400000,  # 4.53 Cr in rupees
+    "manual_mtd": 26458000,  # 6.19 Cr in rupees
+    "manual_pmtd": 14700000,  # 4.53 Cr in rupees
     "manual_collection": "74.0%"
 },
     {
