@@ -108,37 +108,55 @@ METABASE_URL = "http://43.205.95.106:3000"
 METABASE_USERNAME = "shubham.garg@fintechcloud.in"
 METABASE_PASSWORD = "Qwerty@12345"
 
-# Function to get Metabase session token
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def get_metabase_token():
-    """Get authentication token from Metabase"""
-    try:
-        response = requests.post(
-            f"{METABASE_URL}/api/session",
-            json={
-                "username": METABASE_USERNAME,
-                "password": METABASE_PASSWORD
-            },
-            timeout=10
-        )
-        if response.status_code == 200:
-            token = response.json()['id']
-            return token
-        else:
-            st.sidebar.error(f"Metabase auth failed: {response.status_code}")
-            return None
-    except Exception as e:
-        st.sidebar.error(f"Metabase connection error: {str(e)}")
-        return None
+# Initialize session state for metabase token
+if 'metabase_token' not in st.session_state:
+    st.session_state.metabase_token = None
+    st.session_state.token_time = None
 
-# Function to fetch data from Metabase
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_metabase_metric_v2(card_id, token):
+# Function to get Metabase session token with retry
+def get_metabase_token(force_refresh=False):
+    """Get authentication token from Metabase with automatic retry"""
+    # Check if we have a valid token (less than 50 minutes old)
+    if not force_refresh and st.session_state.metabase_token and st.session_state.token_time:
+        time_diff = (datetime.now() - st.session_state.token_time).total_seconds()
+        if time_diff < 3000:  # 50 minutes
+            return st.session_state.metabase_token
+    
+    # Get new token
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(
+                f"{METABASE_URL}/api/session",
+                json={
+                    "username": METABASE_USERNAME,
+                    "password": METABASE_PASSWORD
+                },
+                timeout=10
+            )
+            if response.status_code == 200:
+                token = response.json()['id']
+                st.session_state.metabase_token = token
+                st.session_state.token_time = datetime.now()
+                return token
+            else:
+                if attempt < max_retries - 1:
+                    time.sleep(1)
+                continue
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(1)
+            continue
+    
+    return None
+
+# Function to fetch data from Metabase with retry logic
+def fetch_metabase_metric_v2(card_id, token, retry_count=0):
     """
-    Fetch using /query/json endpoint
+    Fetch using /query/json endpoint with automatic retry on failure
     """
     if not token:
-        return "Auth Error"
+        return None
     
     try:
         headers = {
@@ -146,7 +164,6 @@ def fetch_metabase_metric_v2(card_id, token):
             "Content-Type": "application/json"
         }
         
-        # Try using json/query endpoint with empty parameters
         response = requests.post(
             f"{METABASE_URL}/api/card/{card_id}/query/json",
             headers=headers,
@@ -154,16 +171,18 @@ def fetch_metabase_metric_v2(card_id, token):
             timeout=45
         )
         
+        # If unauthorized, try to get new token
+        if response.status_code == 401 and retry_count == 0:
+            new_token = get_metabase_token(force_refresh=True)
+            if new_token:
+                return fetch_metabase_metric_v2(card_id, new_token, retry_count=1)
+        
         if response.status_code == 200:
             data = response.json()
             
-            # The json endpoint returns an array of objects
             if isinstance(data, list) and len(data) > 0:
-                # Get the first row
                 first_row = data[0]
-                # Get the first value (should be total_disbursed_amount)
                 if isinstance(first_row, dict):
-                    # Get the value from the dict
                     value = list(first_row.values())[0] if first_row else None
                 else:
                     value = first_row
@@ -171,11 +190,10 @@ def fetch_metabase_metric_v2(card_id, token):
                 if value is None:
                     return "₹0.00"
                 
-                # Format the value
                 if isinstance(value, (int, float)):
-                    if value >= 10000000:  # 1 Crore
+                    if value >= 10000000:
                         return f"₹{value/10000000:.2f} Cr"
-                    elif value >= 100000:  # 1 Lakh
+                    elif value >= 100000:
                         return f"₹{value/100000:.2f} L"
                     else:
                         return f"₹{value:,.0f}"
@@ -183,19 +201,23 @@ def fetch_metabase_metric_v2(card_id, token):
             
             return "₹0.00"
         
-        return f"Error {response.status_code}"
+        return None
             
     except Exception as e:
-        return f"Error: {str(e)[:20]}"
+        # On exception, try once more with new token
+        if retry_count == 0:
+            new_token = get_metabase_token(force_refresh=True)
+            if new_token:
+                return fetch_metabase_metric_v2(card_id, new_token, retry_count=1)
+        return None
 
-# Function to fetch collection percentage
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_collection_percentage(card_id, token):
+# Function to fetch collection percentage with retry
+def fetch_collection_percentage(card_id, token, retry_count=0):
     """
-    Fetch collection percentage from Metabase
+    Fetch collection percentage from Metabase with retry
     """
     if not token:
-        return "N/A"
+        return None
     
     try:
         headers = {
@@ -209,6 +231,12 @@ def fetch_collection_percentage(card_id, token):
             json={"parameters": []},
             timeout=45
         )
+        
+        # If unauthorized, try to get new token
+        if response.status_code == 401 and retry_count == 0:
+            new_token = get_metabase_token(force_refresh=True)
+            if new_token:
+                return fetch_collection_percentage(card_id, new_token, retry_count=1)
         
         if response.status_code == 200:
             data = response.json()
@@ -223,17 +251,20 @@ def fetch_collection_percentage(card_id, token):
                 if value is None:
                     return "0%"
                 
-                # Format as percentage
                 if isinstance(value, (int, float)):
                     return f"{value:.1f}%"
                 return str(value)
             
             return "0%"
         
-        return "N/A"
+        return None
             
     except Exception as e:
-        return "N/A"
+        if retry_count == 0:
+            new_token = get_metabase_token(force_refresh=True)
+            if new_token:
+                return fetch_collection_percentage(card_id, new_token, retry_count=1)
+        return None
 
 # Function to calculate total from metric values
 def parse_metric_value(value_str):
@@ -576,22 +607,37 @@ current_day = now.day
 days_in_month = calendar.monthrange(now.year, now.month)[1]
 days_left = days_in_month - current_day
 
+# Add sidebar with refresh button
+with st.sidebar:
+    st.markdown("### 🔧 Controls")
+    
+    if st.button("🔄 Force Refresh All Data", use_container_width=True):
+        # Clear session state
+        st.session_state.metabase_token = None
+        st.session_state.token_time = None
+        # Get new token
+        get_metabase_token(force_refresh=True)
+        st.success("Refreshed! Reloading...")
+        time.sleep(1)
+        st.rerun()
+    
+    # Show connection status
+    if st.session_state.metabase_token:
+        st.success("✅ Metabase Connected")
+        if st.session_state.token_time:
+            age = (datetime.now() - st.session_state.token_time).total_seconds() / 60
+            st.info(f"Token age: {age:.1f} minutes")
+    else:
+        st.error("❌ Not Connected")
+        if st.button("🔌 Reconnect Now"):
+            get_metabase_token(force_refresh=True)
+            st.rerun()
+
 # Get Metabase token
 metabase_token = get_metabase_token()
 
-# Add debug info in sidebar
-with st.sidebar:
-    st.markdown("### 🔧 Debug Info")
-    if metabase_token:
-        st.success("✅ Metabase Connected")
-    else:
-        st.error("❌ Metabase Connection Failed")
-        st.info("Check credentials and server")
-    
-    # Add refresh button
-    if st.button("🔄 Refresh Data"):
-        st.cache_data.clear()
-        st.rerun()
+if not metabase_token:
+    st.error("⚠️ Unable to connect to Metabase. Click 'Reconnect Now' in sidebar.")
 
 # Define brand dashboards with colors and Metabase card IDs
 brand_dashboards = [
@@ -646,8 +692,8 @@ brand_dashboards = [
         "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "indigo",
-        "manual_mtd": 68669604,
-        "manual_pmtd": 52800000,
+        "manual_mtd": 65049130,
+        "manual_pmtd": 49800000,
         "manual_collection": "83.0%"
     },
     {
@@ -807,8 +853,8 @@ brand_dashboards = [
         "collection_card_id": None,
         "metric_label": "MTD Disb",
         "color": "blue",
-        "manual_mtd": 28072000,
-        "manual_pmtd": 15600000,
+        "manual_mtd": 26458000,
+        "manual_pmtd": 14700000,
         "manual_collection": "74.0%"
     },
     {
@@ -852,10 +898,6 @@ brand_dashboards = [
     }
 ]
 
-# Show loading progress
-progress_text = "Loading brand metrics..."
-progress_bar = st.progress(0, text=progress_text)
-
 # Fetch all metrics and calculate totals
 total_disbursement = 0
 total_pmtd_disbursement = 0
@@ -864,11 +906,7 @@ brand_pmtd_metrics = {}
 brand_collections = {}
 brand_yet_to_achieve = {}
 
-for idx, brand in enumerate(brand_dashboards):
-    # Update progress
-    progress = (idx + 1) / len(brand_dashboards)
-    progress_bar.progress(progress, text=f"Loading {brand['name']}...")
-    
+for brand in brand_dashboards:
     # Check if this is a manual entry brand
     if brand.get('manual_mtd') is not None:
         mtd_disb_value = brand['manual_mtd']
@@ -885,7 +923,7 @@ for idx, brand in enumerate(brand_dashboards):
         else:
             brand_yet_to_achieve[brand['name']] = "Target Achieved! 🎉"
         
-        # PMTD for manual entry
+        # PMTD
         if brand.get('manual_pmtd') is not None:
             pmtd_disb_value = brand['manual_pmtd']
             brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
@@ -893,7 +931,7 @@ for idx, brand in enumerate(brand_dashboards):
         else:
             brand_pmtd_metrics[brand['name']] = "Coming Soon"
         
-        # Collection for manual entry
+        # Collection
         if brand.get('manual_collection') is not None:
             brand_collections[brand['name']] = brand['manual_collection']
         else:
@@ -901,54 +939,62 @@ for idx, brand in enumerate(brand_dashboards):
     
     else:
         # Fetch MTD Disbursement from Metabase
-        if brand['metabase_card_id']:
+        if brand['metabase_card_id'] and metabase_token:
             metric_value = fetch_metabase_metric_v2(brand['metabase_card_id'], metabase_token)
-            mtd_disb_value = parse_metric_value(metric_value)
             
-            # Add secondary MTD card if exists
-            if brand.get('secondary_mtd_card_id'):
-                secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
-                mtd_disb_value += parse_metric_value(secondary_metric_value)
-            
-            brand_metrics[brand['name']] = format_total(mtd_disb_value)
-            total_disbursement += mtd_disb_value
-            
-            # Calculate Yet to Achieve
-            target_value = brand['target_value'] * 10000000
-            yet_to_achieve = target_value - mtd_disb_value
-            yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
-            
-            if yet_to_achieve > 0:
-                brand_yet_to_achieve[brand['name']] = f"{format_total(yet_to_achieve)} ({yet_to_achieve_pct:.0f}%)"
+            if metric_value:
+                mtd_disb_value = parse_metric_value(metric_value)
+                
+                # Add secondary MTD card if exists
+                if brand.get('secondary_mtd_card_id'):
+                    secondary_metric_value = fetch_metabase_metric_v2(brand['secondary_mtd_card_id'], metabase_token)
+                    if secondary_metric_value:
+                        mtd_disb_value += parse_metric_value(secondary_metric_value)
+                
+                brand_metrics[brand['name']] = format_total(mtd_disb_value)
+                total_disbursement += mtd_disb_value
+                
+                # Calculate Yet to Achieve
+                target_value = brand['target_value'] * 10000000
+                yet_to_achieve = target_value - mtd_disb_value
+                yet_to_achieve_pct = (yet_to_achieve / target_value * 100) if target_value > 0 else 0
+                
+                if yet_to_achieve > 0:
+                    brand_yet_to_achieve[brand['name']] = f"{format_total(yet_to_achieve)} ({yet_to_achieve_pct:.0f}%)"
+                else:
+                    brand_yet_to_achieve[brand['name']] = "Target Achieved! 🎉"
             else:
-                brand_yet_to_achieve[brand['name']] = "Target Achieved! 🎉"
+                brand_metrics[brand['name']] = "Error - Click Refresh"
+                brand_yet_to_achieve[brand['name']] = "N/A"
         else:
             brand_metrics[brand['name']] = "Coming Soon"
             brand_yet_to_achieve[brand['name']] = "N/A"
         
         # Fetch PMTD Disbursement
-        if brand['pmtd_card_id']:
+        if brand['pmtd_card_id'] and metabase_token:
             pmtd_value = fetch_metabase_metric_v2(brand['pmtd_card_id'], metabase_token)
-            pmtd_disb_value = parse_metric_value(pmtd_value)
             
-            if brand.get('secondary_pmtd_card_id'):
-                secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
-                pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
-            
-            brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
-            total_pmtd_disbursement += pmtd_disb_value
+            if pmtd_value:
+                pmtd_disb_value = parse_metric_value(pmtd_value)
+                
+                if brand.get('secondary_pmtd_card_id'):
+                    secondary_pmtd_value = fetch_metabase_metric_v2(brand['secondary_pmtd_card_id'], metabase_token)
+                    if secondary_pmtd_value:
+                        pmtd_disb_value += parse_metric_value(secondary_pmtd_value)
+                
+                brand_pmtd_metrics[brand['name']] = format_total(pmtd_disb_value)
+                total_pmtd_disbursement += pmtd_disb_value
+            else:
+                brand_pmtd_metrics[brand['name']] = "Error - Click Refresh"
         else:
             brand_pmtd_metrics[brand['name']] = "Coming Soon"
         
         # Fetch Collection %
-        if brand['collection_card_id']:
+        if brand['collection_card_id'] and metabase_token:
             collection_value = fetch_collection_percentage(brand['collection_card_id'], metabase_token)
-            brand_collections[brand['name']] = collection_value
+            brand_collections[brand['name']] = collection_value if collection_value else "Error"
         else:
             brand_collections[brand['name']] = "N/A"
-
-# Clear progress bar
-progress_bar.empty()
 
 # Calculate total target
 total_target = sum([brand['target_value'] for brand in brand_dashboards])
@@ -988,7 +1034,7 @@ mtd_target_amount = calculate_mtd_target(current_day, total_target)
 mtd_shortfall = mtd_target_amount - total_disbursement
 shortfall_percentage = (abs(mtd_shortfall) / mtd_target_amount * 100) if mtd_target_amount > 0 else 0
 
-sg_score = "₹138 Cr"
+sg_score = "₹137 Cr"
 
 # Header
 st.markdown(f"""
