@@ -7,10 +7,14 @@ from zoneinfo import ZoneInfo
 import hashlib
 import json
 import os
+import streamlit.components.v1 as components
 
 # PASSWORD PROTECTION
 PASSWORD = "nbfcsecure123"
 TOKEN_FILE = "auth_tokens.json"
+
+# CELEBRATION CONTROL - Set to False to disable celebration completely
+ENABLE_CELEBRATION = True  # Change to False to turn off celebration
 
 # Token management functions
 def generate_token():
@@ -263,6 +267,133 @@ def format_total(value):
         return f"₹{value/100000:.2f} L"
     else:
         return f"₹{value:,.0f}"
+
+# CELEBRATION FUNCTION - Just call this one line: celebrate()
+def celebrate():
+    """Trigger FULL SCREEN confetti celebration - Just call celebrate() anywhere!"""
+    if not ENABLE_CELEBRATION:
+        return  # Do nothing if celebration is disabled
+    
+    components.html("""
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script>
+    (function() {
+        var duration = 5 * 1000;  // 5 seconds - you can change this!
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 100, zIndex: 99999 };
+        var intervals = [];
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // Stop all confetti function
+        function stopConfetti() {
+            intervals.forEach(interval => clearInterval(interval));
+            intervals = [];
+        }
+
+        // Auto-stop after clicking anywhere on screen
+        document.addEventListener('click', stopConfetti, { once: true });
+
+        // Continuous confetti rain from top
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) {
+                stopConfetti();
+                return;
+            }
+
+            var particleCount = 100 * (timeLeft / duration);
+            
+            // Rain from multiple points across the top
+            confetti(Object.assign({}, defaults, {
+                particleCount: particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: 0 },
+                colors: ['#FFD700', '#FFA500', '#FF69B4', '#00CED1', '#9370DB', '#3b82f6']
+            }));
+            confetti(Object.assign({}, defaults, {
+                particleCount: particleCount,
+                origin: { x: randomInRange(0.4, 0.6), y: 0 },
+                colors: ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6']
+            }));
+            confetti(Object.assign({}, defaults, {
+                particleCount: particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: 0 },
+                colors: ['#ef4444', '#6366f1', '#a855f7', '#22d3ee', '#84cc16']
+            }));
+        }, 150);
+        intervals.push(interval);
+
+        // Big burst from center
+        confetti({
+            particleCount: 200,
+            spread: 160,
+            origin: { y: 0.5 },
+            colors: ['#FFD700', '#FFA500', '#FF69B4', '#00CED1', '#9370DB'],
+            startVelocity: 45,
+            ticks: 100,
+            zIndex: 99999
+        });
+
+        // Cannon shots from sides
+        setTimeout(() => {
+            confetti({
+                particleCount: 150,
+                angle: 60,
+                spread: 100,
+                origin: { x: 0, y: 0.6 },
+                colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+                startVelocity: 55,
+                zIndex: 99999
+            });
+            confetti({
+                particleCount: 150,
+                angle: 120,
+                spread: 100,
+                origin: { x: 1, y: 0.6 },
+                colors: ['#ec4899', '#14b8a6', '#ef4444', '#6366f1'],
+                startVelocity: 55,
+                zIndex: 99999
+            });
+        }, 300);
+
+        // Bottom up explosion
+        setTimeout(() => {
+            confetti({
+                particleCount: 200,
+                spread: 180,
+                origin: { y: 1 },
+                colors: ['#FFD700', '#FFA500', '#FF69B4', '#00CED1', '#9370DB'],
+                startVelocity: 60,
+                ticks: 120,
+                zIndex: 99999,
+                gravity: 0.8
+            });
+        }, 600);
+
+        // Sparkle stars all over
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+                confetti({
+                    particleCount: 50,
+                    spread: 360,
+                    origin: { x: Math.random(), y: Math.random() * 0.5 },
+                    colors: ['#FFD700', '#FFF700', '#FFFF00'],
+                    shapes: ['star'],
+                    ticks: 150,
+                    gravity: 0.5,
+                    scalar: 1.5,
+                    zIndex: 99999
+                });
+            }, i * 400);
+        }
+
+        // Auto-stop after duration
+        setTimeout(stopConfetti, duration);
+    })();
+    </script>
+    """, height=0)
 
 # Custom CSS for KPI card style
 st.markdown("""
@@ -1009,6 +1140,10 @@ st.markdown(f"""
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+# Example: Celebrate when achievement is 100%
+# if (total_disbursement / (total_target * 10000000) * 100) >= 100:
+#     celebrate()
 
 # Display summary cards
 cols = st.columns(3, gap="medium")
