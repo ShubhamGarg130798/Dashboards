@@ -536,7 +536,7 @@ def fetch_brand_data(brand, token):
     return result
 
 # Show header immediately
-sg_score = "₹137 Cr"
+sg_score = "₹138 Cr"
 
 st.markdown(f"""
     <div class="header-section">
