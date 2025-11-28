@@ -180,13 +180,24 @@ def parse_metric_value(value_str):
         return value_str
     return 0
 
-# Custom CSS
+# Custom CSS with Celebration Confetti
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
     
     * {
         font-family: 'Inter', sans-serif;
+    }
+    
+    /* Confetti Container */
+    #confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
     }
     
     .stApp {
@@ -450,6 +461,106 @@ st.markdown("""
         }
     }
     </style>
+    """, unsafe_allow_html=True)
+
+# Add Confetti JavaScript
+st.markdown("""
+    <canvas id="confetti-canvas"></canvas>
+    <script>
+    (function() {
+        const canvas = document.getElementById('confetti-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const confettiColors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+            '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1',
+            '#fbbf24', '#f43f5e', '#06b6d4', '#84cc16'
+        ];
+        
+        class Confetti {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height - canvas.height;
+            }
+            
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = -20;
+                this.w = Math.random() * 15 + 5;
+                this.h = this.w * 0.6;
+                this.color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 10 - 5;
+                this.velocityY = Math.random() * 3 + 2;
+                this.velocityX = Math.random() * 2 - 1;
+                this.opacity = 1;
+            }
+            
+            update() {
+                this.y += this.velocityY;
+                this.x += this.velocityX;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.w / 2, this.y + this.h / 2);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+                ctx.restore();
+            }
+        }
+        
+        // Create confetti pieces
+        const confettiPieces = [];
+        for (let i = 0; i < 150; i++) {
+            confettiPieces.push(new Confetti());
+        }
+        
+        let animationFrame;
+        let startTime = Date.now();
+        const duration = 8000; // 8 seconds
+        
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            
+            if (elapsed > duration) {
+                // Fade out and stop
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.style.display = 'none';
+                return;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            confettiPieces.forEach(confetti => {
+                confetti.update();
+                confetti.draw();
+            });
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // Start animation
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    })();
+    </script>
     """, unsafe_allow_html=True)
 
 # Get current date
