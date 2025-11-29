@@ -713,7 +713,7 @@ def calculate_mtd_target(current_day, total_target_cr):
         days_in_month = calendar.monthrange(now.year, now.month)[1]
         days_in_bracket = current_day - 25
         total_days_in_bracket = days_in_month - 25
-        mtd_percentage = (21.23 + 11.61 + 8.13 + 7.75 + 12.96 + 38.31 * (days_in_bracket / total_days_in_bracket)) / 100
+        mtd_percentage = (100 * (days_in_bracket / total_days_in_bracket)) / 100
     
     return total_target_amount * mtd_percentage
 
